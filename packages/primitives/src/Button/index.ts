@@ -1,3 +1,2 @@
-// @extracted/primitives - Style-locked primitive components
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
