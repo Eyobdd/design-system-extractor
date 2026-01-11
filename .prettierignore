@@ -1,0 +1,29 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+.next
+.turbo
+out
+
+# Coverage
+coverage
+
+# Package manager
+pnpm-lock.yaml
+
+# Minified files
+*.min.js
+*.min.css
+
+# Generated files
+*.generated.*
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
