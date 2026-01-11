@@ -73,7 +73,7 @@ Create @extracted/types package structure
 ### CL-0.3: Verify CI Pipeline
 
 - [ ] Push triggers GitHub Actions
-- [ ] CI workflow appears in Actions tab
+- [ ] CI workflow appears in Actions tab (includes Docker/Puppeteer environment)
 - [ ] All jobs run (may fail until code exists — that's OK)
 
 **Commit**: N/A (verification only)
@@ -472,7 +472,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-5.6: Implement DOM Style Extraction
+### CL-5.6: Implement DOM Style Extraction (including Pseudo-classes)
 
 - [ ] Create `packages/extractor/src/dom/properties.ts`:
   - `RELEVANT_PROPERTIES` object with kebab-case property names
@@ -480,10 +480,23 @@ Create @extracted/types package structure
 - [ ] Create `packages/extractor/src/dom/extract.ts`:
   - Execute in-page JavaScript
   - Use `getPropertyValue()` with kebab-case
+  - Support extracting pseudo-classes (`:hover`, `:active`, `:focus`) by triggering states
+  - Handle Shadow DOM traversal where possible
   - Compare against reference element
   - Update checkpoint to 'extraction' status
 
-**Commit**: `Implement DOM style extraction`
+**Commit**: `Implement DOM style extraction with pseudo-classes`
+
+---
+
+### CL-5.7: Implement Dry Run and Local Verification
+
+- [ ] Add a `dryRun` flag to the extractor
+- [ ] Implement local HTML file extraction (for testing without live URLs)
+- [ ] Add regression test suite using local fixtures
+- [ ] Update `package.json` with extraction test scripts
+
+**Commit**: `Add dry run mode and local extraction verification`
 
 **🛑 CHECKPOINT**: Core extraction pipeline works.
 
