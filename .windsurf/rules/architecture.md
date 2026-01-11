@@ -16,14 +16,14 @@ Types are not just for developer experience — they are the **enforcement mecha
 // ✅ CORRECT: Use Pick<> to whitelist allowed props
 type AllowedButtonProps = Pick<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
-  | 'onClick' | 'onFocus' | 'onBlur' | 'disabled' | 'type' | 'aria-label'
+  'onClick' | 'onFocus' | 'onBlur' | 'disabled' | 'type' | 'aria-label'
   // ... explicit whitelist
 >;
 
 // ❌ WRONG: Using Omit<> creates a blacklist that can be bypassed
 type ButtonProps = Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
-  'className' | 'style'  // What about id? data-*? 
+  'className' | 'style' // What about id? data-*?
 >;
 ```
 
@@ -34,12 +34,14 @@ If `className` isn't in the type definition, an AI **cannot** pass it. This is t
 ### 2. Primitives Are Style-Locked
 
 Base components accept **ONLY** behavioral props:
+
 - Event handlers: `onClick`, `onFocus`, `onBlur`, `onKeyDown`, etc.
 - Form attributes: `disabled`, `type`, `name`, `value`, `form`
 - Accessibility: `aria-*` attributes, `tabIndex`
 - Refs: `ref` via `forwardRef`
 
 **NEVER** expose:
+
 - `id` — Can be targeted by CSS (`#myId { ... }`)
 - `className` — Direct style override
 - `style` — Inline style override
@@ -172,7 +174,7 @@ A variant spec contains **token keys**, not CSS values. This indirection enables
 // ❌ WRONG: Raw values in variant
 const buttonVariants = {
   primary: {
-    backgroundColor: '#2563eb',  // Raw value
+    backgroundColor: '#2563eb', // Raw value
     color: '#ffffff',
   },
 };
@@ -180,11 +182,11 @@ const buttonVariants = {
 // ✅ CORRECT: Token references in variant
 const buttonVariants = {
   primary: {
-    surface: 'surface-primary',      // Key into surfaceColors
-    text: 'text-on-primary',         // Key into textColors
+    surface: 'surface-primary', // Key into surfaceColors
+    text: 'text-on-primary', // Key into textColors
     border: null,
-    radius: 'md',                    // Key into radii
-    paddingX: 4,                     // Key into spacing
+    radius: 'md', // Key into radii
+    paddingX: 4, // Key into spacing
     paddingY: 2,
   },
 } as const satisfies Record<ButtonVariant, ButtonVariantSpec>;
@@ -282,10 +284,10 @@ test('shows visual feedback on hover', async () => {
   render(<Button variant="primary">Click</Button>);
   const button = screen.getByRole('button');
   const initialBg = window.getComputedStyle(button).backgroundColor;
-  
+
   await userEvent.hover(button);
   const hoveredBg = window.getComputedStyle(button).backgroundColor;
-  
+
   expect(hoveredBg).not.toBe(initialBg);  // Something changed, don't care what
 });
 
@@ -293,10 +295,10 @@ test('shows visual feedback on hover', async () => {
 test('can be activated with keyboard', async () => {
   const handleClick = vi.fn();
   render(<Button variant="primary" onClick={handleClick}>Click</Button>);
-  
+
   screen.getByRole('button').focus();
   await userEvent.keyboard('{Enter}');
-  
+
   expect(handleClick).toHaveBeenCalledOnce();
 });
 
@@ -304,9 +306,9 @@ test('can be activated with keyboard', async () => {
 test('disabled button is not interactive', async () => {
   const handleClick = vi.fn();
   render(<Button variant="primary" onClick={handleClick} disabled>Click</Button>);
-  
+
   await userEvent.click(screen.getByRole('button'));
-  
+
   expect(handleClick).not.toHaveBeenCalled();
   expect(screen.getByRole('button')).toBeDisabled();
 });
@@ -326,9 +328,9 @@ Automated comparison must achieve **95%+ similarity** before showing the user.
 
 ```typescript
 const MATCH_THRESHOLDS = {
-  FAIL_FAST: 0.70,      // Below this, don't waste LLM tokens
+  FAIL_FAST: 0.7, // Below this, don't waste LLM tokens
   NEEDS_ITERATION: 0.95, // Below this, keep iterating
-  PASS: 0.95,           // At or above this, show to user
+  PASS: 0.95, // At or above this, show to user
 } as const;
 ```
 
@@ -360,13 +362,13 @@ apps/web                (depends on all packages)
 
 ### Package Responsibilities
 
-| Package | Responsibility | Runtime Code? |
-|---------|---------------|---------------|
-| `@extracted/types` | Type definitions only | No |
-| `@extracted/tokens` | Token values + CSS generation | Yes |
-| `@extracted/primitives` | Locked-down base components | Yes |
-| `@extracted/extractor` | Screenshot, vision, DOM extraction, comparison | Yes |
-| `apps/web` | Next.js UI for extraction workflow | Yes |
+| Package                 | Responsibility                                 | Runtime Code? |
+| ----------------------- | ---------------------------------------------- | ------------- |
+| `@extracted/types`      | Type definitions only                          | No            |
+| `@extracted/tokens`     | Token values + CSS generation                  | Yes           |
+| `@extracted/primitives` | Locked-down base components                    | Yes           |
+| `@extracted/extractor`  | Screenshot, vision, DOM extraction, comparison | Yes           |
+| `apps/web`              | Next.js UI for extraction workflow             | Yes           |
 
 ---
 

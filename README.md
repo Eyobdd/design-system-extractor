@@ -92,10 +92,10 @@ npm run typecheck    # Type check all packages
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GEMINI_API_KEY` | Yes | Google AI Studio API key |
-| `NEXT_PUBLIC_BASE_URL` | No | Application URL |
+| Variable               | Required | Description              |
+| ---------------------- | -------- | ------------------------ |
+| `GEMINI_API_KEY`       | Yes      | Google AI Studio API key |
+| `NEXT_PUBLIC_BASE_URL` | No       | Application URL          |
 
 ## Tech Stack
 

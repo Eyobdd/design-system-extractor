@@ -17,26 +17,26 @@
 
 ### ❌ These Are Implementation Details (Don't Test)
 
-| Category | Examples |
-|----------|----------|
-| **Internal state** | `useState` values, reducer state shape, `isLoading` flags |
-| **Internal functions** | Private helper functions, internal hooks |
-| **CSS specifics** | Exact color values, specific class names, inline styles |
-| **DOM structure** | Number of wrapper divs, specific element nesting |
-| **Library internals** | How a library implements a feature |
-| **Function call counts** | "Called 3 times" (unless it's the behavioral contract) |
+| Category                 | Examples                                                  |
+| ------------------------ | --------------------------------------------------------- |
+| **Internal state**       | `useState` values, reducer state shape, `isLoading` flags |
+| **Internal functions**   | Private helper functions, internal hooks                  |
+| **CSS specifics**        | Exact color values, specific class names, inline styles   |
+| **DOM structure**        | Number of wrapper divs, specific element nesting          |
+| **Library internals**    | How a library implements a feature                        |
+| **Function call counts** | "Called 3 times" (unless it's the behavioral contract)    |
 
 ### ✅ These Are Behavior (Do Test)
 
-| Category | Examples |
-|----------|----------|
-| **User interactions** | Click triggers action, keyboard navigates |
-| **Rendered output** | Text appears, element is visible/hidden |
-| **Accessibility** | Has correct role, label, ARIA state |
-| **Form behavior** | Submits data, validates input, shows errors |
-| **Visual feedback** | Something changes on hover (not what changes) |
-| **Prop contracts** | Required props work, variants render differently |
-| **Error states** | Error message appears when appropriate |
+| Category              | Examples                                         |
+| --------------------- | ------------------------------------------------ |
+| **User interactions** | Click triggers action, keyboard navigates        |
+| **Rendered output**   | Text appears, element is visible/hidden          |
+| **Accessibility**     | Has correct role, label, ARIA state              |
+| **Form behavior**     | Submits data, validates input, shows errors      |
+| **Visual feedback**   | Something changes on hover (not what changes)    |
+| **Prop contracts**    | Required props work, variants render differently |
+| **Error states**      | Error message appears when appropriate           |
 
 ---
 
@@ -67,13 +67,13 @@ test('shows loading indicator during submission', async () => {
 test('button is keyboard accessible', async () => {
   const onClick = vi.fn();
   render(<Button variant="primary" onClick={onClick}>Click</Button>);
-  
+
   const button = screen.getByRole('button');
   button.focus();
-  
+
   await userEvent.keyboard('{Enter}');
   expect(onClick).toHaveBeenCalledOnce();
-  
+
   await userEvent.keyboard(' ');  // Space
   expect(onClick).toHaveBeenCalledTimes(2);
 });
@@ -92,8 +92,8 @@ test('disabled button has correct aria state', () => {
 // ❌ BAD: Testing specific style values
 test('primary button has blue background', () => {
   render(<Button variant="primary">Click</Button>);
-  expect(screen.getByRole('button')).toHaveStyle({ 
-    backgroundColor: '#2563eb' 
+  expect(screen.getByRole('button')).toHaveStyle({
+    backgroundColor: '#2563eb'
   });
 });
 
@@ -101,10 +101,10 @@ test('primary button has blue background', () => {
 test('each variant renders a visually distinct button', () => {
   const { rerender } = render(<Button variant="primary">Click</Button>);
   const primaryStyle = window.getComputedStyle(screen.getByRole('button'));
-  
+
   rerender(<Button variant="secondary">Click</Button>);
   const secondaryStyle = window.getComputedStyle(screen.getByRole('button'));
-  
+
   // Test that they're different, not what they are
   expect(primaryStyle.backgroundColor).not.toBe(secondaryStyle.backgroundColor);
 });
@@ -116,13 +116,13 @@ test('each variant renders a visually distinct button', () => {
 // ✅ GOOD: Testing that TypeScript prevents invalid usage
 test('TypeScript prevents styling props', () => {
   // These should cause TypeScript errors — if the file compiles, the test fails
-  
+
   // @ts-expect-error - className is not allowed
   <Button variant="primary" className="override">Click</Button>;
-  
+
   // @ts-expect-error - style is not allowed
   <Button variant="primary" style={{ color: 'red' }}>Click</Button>;
-  
+
   // @ts-expect-error - id is not allowed
   <Button variant="primary" id="my-button">Click</Button>;
 });
@@ -134,17 +134,17 @@ test('TypeScript prevents styling props', () => {
 // ✅ GOOD: Testing form behavior end-to-end
 test('submit button submits the form', async () => {
   const onSubmit = vi.fn((e) => e.preventDefault());
-  
+
   render(
     <form onSubmit={onSubmit}>
       <Input name="email" variant="default" />
       <Button variant="primary" type="submit">Submit</Button>
     </form>
   );
-  
+
   await userEvent.type(screen.getByRole('textbox'), 'test@example.com');
   await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
-  
+
   expect(onSubmit).toHaveBeenCalledOnce();
 });
 ```
@@ -155,11 +155,11 @@ test('submit button submits the form', async () => {
 // ✅ GOOD: Testing error feedback
 test('shows error message for invalid input', async () => {
   render(<EmailInput variant="default" />);
-  
+
   const input = screen.getByRole('textbox');
   await userEvent.type(input, 'invalid-email');
   await userEvent.tab();  // Trigger blur validation
-  
+
   expect(screen.getByRole('alert')).toHaveTextContent(/invalid email/i);
 });
 ```
@@ -187,20 +187,20 @@ import { Button } from './Button';
 
 describe('Button', () => {
   // Group by behavior category
-  
+
   describe('rendering', () => {
     it('renders children correctly', () => {
       render(<Button variant="primary">Click me</Button>);
       expect(screen.getByRole('button')).toHaveTextContent('Click me');
     });
-    
+
     it('forwards ref to button element', () => {
       const ref = React.createRef<HTMLButtonElement>();
       render(<Button variant="primary" ref={ref}>Click</Button>);
       expect(ref.current).toBeInstanceOf(HTMLButtonElement);
     });
   });
-  
+
   describe('interactions', () => {
     it('calls onClick when clicked', async () => {
       const onClick = vi.fn();
@@ -208,7 +208,7 @@ describe('Button', () => {
       await userEvent.click(screen.getByRole('button'));
       expect(onClick).toHaveBeenCalledOnce();
     });
-    
+
     it('does not call onClick when disabled', async () => {
       const onClick = vi.fn();
       render(<Button variant="primary" onClick={onClick} disabled>Click</Button>);
@@ -216,7 +216,7 @@ describe('Button', () => {
       expect(onClick).not.toHaveBeenCalled();
     });
   });
-  
+
   describe('accessibility', () => {
     it('is keyboard accessible', async () => {
       const onClick = vi.fn();
@@ -225,33 +225,33 @@ describe('Button', () => {
       await userEvent.keyboard('{Enter}');
       expect(onClick).toHaveBeenCalledOnce();
     });
-    
+
     it('has correct aria-disabled when disabled', () => {
       render(<Button variant="primary" disabled>Click</Button>);
       expect(screen.getByRole('button')).toBeDisabled();
     });
   });
-  
+
   describe('variants', () => {
     it('renders different variants with distinct styles', () => {
       const { rerender } = render(<Button variant="primary">Click</Button>);
       const primaryBg = window.getComputedStyle(screen.getByRole('button')).backgroundColor;
-      
+
       rerender(<Button variant="secondary">Click</Button>);
       const secondaryBg = window.getComputedStyle(screen.getByRole('button')).backgroundColor;
-      
+
       expect(primaryBg).not.toBe(secondaryBg);
     });
   });
-  
+
   describe('type safety', () => {
     it('prevents styling props at compile time', () => {
       // @ts-expect-error - className not allowed
       <Button variant="primary" className="x">Click</Button>;
-      
+
       // @ts-expect-error - style not allowed
       <Button variant="primary" style={{}}>Click</Button>;
-      
+
       // @ts-expect-error - id not allowed
       <Button variant="primary" id="x">Click</Button>;
     });
@@ -295,13 +295,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      exclude: [
-        'node_modules',
-        'dist',
-        '**/*.d.ts',
-        '**/*.test.{ts,tsx}',
-        '**/index.ts',
-      ],
+      exclude: ['node_modules', 'dist', '**/*.d.ts', '**/*.test.{ts,tsx}', '**/index.ts'],
     },
   },
 });
@@ -340,7 +334,7 @@ describe('color tokens', () => {
         expect(color).toMatch(hexPattern);
       });
     });
-    
+
     it('elevated surface is lighter than default (for light theme)', () => {
       const defaultLightness = getLightness(surfaceColors['surface-default']);
       const elevatedLightness = getLightness(surfaceColors['surface-elevated']);
@@ -349,7 +343,7 @@ describe('color tokens', () => {
       expect(elevatedLightness).toBeGreaterThanOrEqual(defaultLightness);
     });
   });
-  
+
   describe('text colors', () => {
     it('primary text has sufficient contrast against surfaces', () => {
       const contrastRatio = getContrastRatio(
@@ -376,27 +370,27 @@ import { captureScreenshot } from '../../src/screenshot/capture';
 
 describe('captureScreenshot', () => {
   // Use real browser in CI, mock in local dev (optional)
-  
+
   it('captures screenshot of valid URL', async () => {
     const result = await captureScreenshot('https://example.com');
-    
+
     expect(result.success).toBe(true);
     expect(result.screenshot).toBeInstanceOf(Buffer);
     expect(result.screenshot.length).toBeGreaterThan(0);
   });
-  
+
   it('returns error for invalid URL', async () => {
     const result = await captureScreenshot('not-a-url');
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain('Invalid URL');
   });
-  
+
   it('handles timeout gracefully', async () => {
     const result = await captureScreenshot('https://httpstat.us/200?sleep=30000', {
       timeout: 1000,
     });
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain('timeout');
   });
@@ -408,6 +402,7 @@ describe('captureScreenshot', () => {
 ## Snapshot Testing Policy
 
 **Generally avoid snapshots** because they:
+
 - Test implementation details (DOM structure)
 - Break on any change, even valid refactors
 - Encourage "update snapshot" without review
@@ -431,13 +426,13 @@ it('generates expected CSS variables', () => {
 
 ## Test Coverage Requirements
 
-| Package | Minimum Coverage | Focus Areas |
-|---------|------------------|-------------|
-| `@extracted/types` | N/A (types only) | N/A |
-| `@extracted/tokens` | 80% | Token validation, CSS generation |
-| `@extracted/primitives` | 90% | All component behavior |
-| `@extracted/extractor` | 70% | Critical paths, error handling |
-| `apps/web` | 60% | API routes, critical UI flows |
+| Package                 | Minimum Coverage | Focus Areas                      |
+| ----------------------- | ---------------- | -------------------------------- |
+| `@extracted/types`      | N/A (types only) | N/A                              |
+| `@extracted/tokens`     | 80%              | Token validation, CSS generation |
+| `@extracted/primitives` | 90%              | All component behavior           |
+| `@extracted/extractor`  | 70%              | Critical paths, error handling   |
+| `apps/web`              | 60%              | API routes, critical UI flows    |
 
 ---
 

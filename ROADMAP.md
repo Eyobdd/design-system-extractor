@@ -7,12 +7,14 @@
 ## ⚠️ Instructions for Windsurf
 
 ### Before Starting
+
 1. **Read this entire document** to understand the scope
 2. **Read `.windsurf/rules/architecture.md`** for core principles
 3. **Review and critique this roadmap** — suggest improvements before implementing
 4. **Ask clarifying questions** if anything is unclear
 
 ### During Implementation
+
 1. **Work through CLs sequentially** — each builds on the previous
 2. **Check off tasks** as you complete them using `- [x]`
 3. **Run verification commands** before moving to the next CL
@@ -22,7 +24,9 @@
 7. **Suggest improvements** as you discover them
 
 ### Commit Message Format
+
 Use simple, descriptive commit messages WITHOUT type prefixes:
+
 ```
 Initialize turborepo monorepo with npm workspaces
 Add shared TypeScript configurations
@@ -46,12 +50,12 @@ Create @extracted/types package structure
 
 ### CL-0.1: Create GitHub Repository
 
-- [ ] Go to github.com/new
-- [ ] Repository name: `design-system-extractor`
-- [ ] Owner: `Eyobdd`
-- [ ] Public repository
-- [ ] Do NOT initialize with README (we have one)
-- [ ] Create repository
+- [x] Go to github.com/new
+- [x] Repository name: `design-system-extractor`
+- [x] Owner: `Eyobdd`
+- [x] Public repository
+- [x] Do NOT initialize with README (we have one)
+- [x] Create repository
 
 **Commit**: N/A (GitHub UI)
 
@@ -59,12 +63,12 @@ Create @extracted/types package structure
 
 ### CL-0.2: Initialize Local Repository
 
-- [ ] Run `git init` in project root
-- [ ] Run `git add .`
-- [ ] Run `git commit -m "Initialize project structure"`
-- [ ] Run `git remote add origin https://github.com/Eyobdd/design-system-extractor.git`
-- [ ] Run `git branch -M main`
-- [ ] Run `git push -u origin main`
+- [x] Run `git init` in project root
+- [x] Run `git add .`
+- [x] Run `git commit -m "Initialize project structure"`
+- [x] Run `git remote add origin https://github.com/Eyobdd/design-system-extractor.git`
+- [x] Run `git branch -M main`
+- [x] Run `git push -u origin main`
 
 **Commit**: `Initialize project structure`
 
@@ -86,10 +90,10 @@ Create @extracted/types package structure
 
 ### CL-1.1: Install Root Dependencies
 
-- [ ] Run `npm install`
-- [ ] Verify `node_modules/` created
-- [ ] Verify `package-lock.json` created
-- [ ] Run `npx turbo --version` — should output version
+- [x] Run `npm install`
+- [x] Verify `node_modules/` created
+- [x] Verify `package-lock.json` created
+- [x] Run `npx turbo --version` — should output version
 
 **Commit**: `Install root dependencies`
 
@@ -97,13 +101,13 @@ Create @extracted/types package structure
 
 ### CL-1.2: Setup Husky Pre-commit Hooks
 
-- [ ] Run `npx husky init`
-- [ ] Create `.husky/pre-commit` with content:
+- [x] Run `npx husky init`
+- [x] Create `.husky/pre-commit` with content:
   ```bash
   npx lint-staged
   ```
-- [ ] Test: Create dummy file, stage it, commit — hooks should run
-- [ ] Delete dummy file
+- [x] Test: Create dummy file, stage it, commit — hooks should run
+- [x] Delete dummy file
 
 **Commit**: `Setup husky pre-commit hooks`
 
@@ -111,7 +115,7 @@ Create @extracted/types package structure
 
 ### CL-1.3: Create ESLint Config Package
 
-- [ ] Create `packages/eslint-config/package.json`:
+- [x] Create `packages/eslint-config/package.json`:
   ```json
   {
     "name": "@extracted/eslint-config",
@@ -129,9 +133,9 @@ Create @extracted/types package structure
     }
   }
   ```
-- [ ] Create `packages/eslint-config/base.js` with TypeScript rules
-- [ ] Create `packages/eslint-config/react.js` extending base
-- [ ] Run `npm install`
+- [x] Create `packages/eslint-config/base.js` with TypeScript rules
+- [x] Create `packages/eslint-config/react.js` extending base
+- [x] Run `npm install`
 
 **Commit**: `Add ESLint configuration package`
 
@@ -139,8 +143,8 @@ Create @extracted/types package structure
 
 ### CL-1.4: Add Root ESLint Config
 
-- [ ] Create root `eslint.config.js` that uses shared config
-- [ ] Run `npm run lint` — should work (no files to lint yet)
+- [x] Create root `eslint.config.js` that uses shared config
+- [x] Run `npm run lint` — should work (no files to lint yet)
 
 **Commit**: `Configure root ESLint`
 
@@ -182,7 +186,7 @@ Create @extracted/types package structure
 
 - [ ] Create `packages/types/src/primitives/colors.ts`:
   ```typescript
-  export type SurfaceColorKey = string;  // Narrowed during extraction
+  export type SurfaceColorKey = string; // Narrowed during extraction
   export type TextColorKey = string;
   export type BorderColorKey = string;
   export type ShadowKey = string;
@@ -311,8 +315,14 @@ Create @extracted/types package structure
   ```typescript
   export type AllowedButtonBehavioralProps = Pick<
     React.ButtonHTMLAttributes<HTMLButtonElement>,
-    | 'onClick' | 'onFocus' | 'onBlur' | 'disabled' | 'type'
-    | 'aria-label' | 'aria-pressed' | 'tabIndex'
+    | 'onClick'
+    | 'onFocus'
+    | 'onBlur'
+    | 'disabled'
+    | 'type'
+    | 'aria-label'
+    | 'aria-pressed'
+    | 'tabIndex'
     // ... full whitelist, NO id/className/style
   >;
   ```
@@ -404,8 +414,15 @@ Create @extracted/types package structure
   export interface ExtractionCheckpoint {
     id: string;
     url: string;
-    status: 'pending' | 'screenshot' | 'vision' | 'extraction' | 'comparison' | 'complete' | 'failed';
-    progress: number;  // 0-100
+    status:
+      | 'pending'
+      | 'screenshot'
+      | 'vision'
+      | 'extraction'
+      | 'comparison'
+      | 'complete'
+      | 'failed';
+    progress: number; // 0-100
     startedAt: Date;
     updatedAt: Date;
     screenshots?: { viewport: Buffer; fullPage: Buffer };
@@ -699,21 +716,22 @@ Create @extracted/types package structure
 ## Checkpointing System Details
 
 The extraction pipeline uses a checkpoint system to:
+
 1. **Resume on failure** — If any step fails, restart from last checkpoint
 2. **Show progress** — User sees real-time progress (0-100%)
 3. **Persist state** — Stored as JSON files in `.checkpoints/` directory
 
 ### Checkpoint Stages
 
-| Stage | Progress | Description |
-|-------|----------|-------------|
-| `pending` | 0% | Just started |
-| `screenshot` | 20% | Screenshots captured |
-| `vision` | 40% | Components identified |
-| `extraction` | 60% | DOM styles extracted |
-| `comparison` | 80% | Components compared |
-| `complete` | 100% | Ready for export |
-| `failed` | varies | Error occurred |
+| Stage        | Progress | Description           |
+| ------------ | -------- | --------------------- |
+| `pending`    | 0%       | Just started          |
+| `screenshot` | 20%      | Screenshots captured  |
+| `vision`     | 40%      | Components identified |
+| `extraction` | 60%      | DOM styles extracted  |
+| `comparison` | 80%      | Components compared   |
+| `complete`   | 100%     | Ready for export      |
+| `failed`     | varies   | Error occurred        |
 
 ### Usage
 
@@ -731,8 +749,8 @@ const checkpoint = await store.save({
 });
 
 // Update as we progress
-await store.update(checkpoint.id, { 
-  status: 'screenshot', 
+await store.update(checkpoint.id, {
+  status: 'screenshot',
   progress: 20,
   screenshots: { viewport, fullPage },
 });

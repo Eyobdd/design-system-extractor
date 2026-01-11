@@ -43,12 +43,12 @@ Update README with deployment instructions
 
 ### Examples
 
-| ✅ Good | ❌ Bad |
-|---------|--------|
-| `Add Button component tests` | `feat(primitives): add button tests` |
-| `Fix screenshot timeout handling` | `fix: timeout` |
-| `Update dependencies` | `chore(deps): bump versions` |
-| `Implement checkpointing system` | `Added checkpoints` |
+| ✅ Good                           | ❌ Bad                               |
+| --------------------------------- | ------------------------------------ |
+| `Add Button component tests`      | `feat(primitives): add button tests` |
+| `Fix screenshot timeout handling` | `fix: timeout`                       |
+| `Update dependencies`             | `chore(deps): bump versions`         |
+| `Implement checkpointing system`  | `Added checkpoints`                  |
 
 ---
 
@@ -71,8 +71,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
       - run: npm ci
       - run: npm run lint
       - run: npm run format:check
@@ -84,8 +84,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
       - run: npm ci
       - run: npm test
 
@@ -96,8 +96,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
       - run: npm ci
       - run: npm run build
 ```
@@ -162,17 +162,17 @@ services:
 
 ### Environment Variables
 
-| Variable | Description | Where |
-|----------|-------------|-------|
+| Variable         | Description       | Where                     |
+| ---------------- | ----------------- | ------------------------- |
 | `GEMINI_API_KEY` | Google AI API key | Render dashboard (secret) |
-| `NODE_ENV` | Environment | render.yaml |
+| `NODE_ENV`       | Environment       | render.yaml               |
 
 ---
 
 ## Branch Strategy
 
 - **main** — Production branch, protected
-- **feature/*** — Feature branches
+- **feature/\*** — Feature branches
 - All changes via pull request
 - CI must pass before merge
 

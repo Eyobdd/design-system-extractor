@@ -16,7 +16,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
-        value: "20"
+        value: '20'
       - key: GEMINI_API_KEY
         sync: false
       - key: NEXT_PUBLIC_BASE_URL
@@ -26,7 +26,7 @@ services:
           property: host
       # Puppeteer configuration for Render
       - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
-        value: "true"
+        value: 'true'
       - key: PUPPETEER_EXECUTABLE_PATH
         value: /usr/bin/google-chrome-stable
     buildFilter:

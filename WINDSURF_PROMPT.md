@@ -74,7 +74,7 @@ Then review and critique the roadmap before we start implementing.
 Once Windsurf has reviewed everything and you're ready to start:
 
 ```
-Let's begin with CL-0.1: Create GitHub Repository. 
+Let's begin with CL-0.1: Create GitHub Repository.
 My GitHub username is Eyobdd.
 Walk me through the steps and then we'll continue to CL-0.2.
 ```
@@ -107,7 +107,7 @@ Let's stop here for now. Please:
 When you come back:
 
 ```
-We're continuing work on the Design System Extractor. 
+We're continuing work on the Design System Extractor.
 Last time we completed [CL-X.X].
 Please read ROADMAP.md and confirm the next step is [CL-X.X].
 Let's continue.
