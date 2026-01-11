@@ -240,9 +240,9 @@ Create @extracted/types package structure
 
 ### CL-3.1: Create Tokens Package Structure
 
-- [ ] Create `packages/tokens/package.json` with dependency on `@extracted/types`
-- [ ] Create `packages/tokens/tsconfig.json`
-- [ ] Create `packages/tokens/src/index.ts`
+- [x] Create `packages/tokens/package.json` with dependency on `@extracted/types`
+- [x] Create `packages/tokens/tsconfig.json`
+- [x] Create `packages/tokens/src/index.ts`
 
 **Commit**: `Scaffold @extracted/tokens package`
 
@@ -250,7 +250,7 @@ Create @extracted/types package structure
 
 ### CL-3.2: Create Placeholder Token Values
 
-- [ ] Create `packages/tokens/src/primitives/colors.ts`:
+- [x] Create `packages/tokens/src/primitives/colors.ts`:
   ```typescript
   export const surfaceColors = {
     'surface-default': '#ffffff',
@@ -258,9 +258,9 @@ Create @extracted/types package structure
     'surface-muted': '#f1f5f9',
   } as const;
   ```
-- [ ] Create `packages/tokens/src/primitives/typography.ts`
-- [ ] Create `packages/tokens/src/primitives/spacing.ts`
-- [ ] Create barrel exports
+- [x] Create `packages/tokens/src/primitives/typography.ts`
+- [x] Create `packages/tokens/src/primitives/spacing.ts`
+- [x] Create barrel exports
 
 **Commit**: `Add placeholder token values`
 
@@ -268,14 +268,14 @@ Create @extracted/types package structure
 
 ### CL-3.3: Create CSS Generation Utility
 
-- [ ] Create `packages/tokens/src/css/generate.ts`:
+- [x] Create `packages/tokens/src/css/generate.ts`:
   ```typescript
   export function generateCSSVariables(tokens: Record<string, unknown>): string {
     // Generate :root { --color-surface-default: #fff; ... }
   }
   ```
-- [ ] Create `packages/tokens/scripts/generate-css.ts` build script
-- [ ] Add `build:css` script to package.json
+- [x] Create `packages/tokens/scripts/generate-css.ts` build script
+- [x] Add `build:css` script to package.json
 
 **Commit**: `Add CSS variable generation`
 
@@ -283,12 +283,12 @@ Create @extracted/types package structure
 
 ### CL-3.4: Add Token Tests
 
-- [ ] Install Vitest: `npm install -D vitest --workspace=packages/tokens`
-- [ ] Create `packages/tokens/vitest.config.ts`
-- [ ] Create `packages/tokens/__tests__/colors.test.ts`:
+- [x] Install Vitest: `npm install -D vitest --workspace=packages/tokens`
+- [x] Create `packages/tokens/vitest.config.ts`
+- [x] Create `packages/tokens/__tests__/colors.test.ts`:
   - Test: All color values are valid hex
   - Test: Surface colors exist
-- [ ] Run `npm test --workspace=packages/tokens`
+- [x] Run `npm test --workspace=packages/tokens`
 
 **Commit**: `Add token validation tests`
 
