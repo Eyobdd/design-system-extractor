@@ -34,6 +34,7 @@ Once you've reviewed everything and I've answered any questions, we'll start wit
 
 Important notes:
 - Use npm (not pnpm or yarn)
+- **CRITICAL**: Run `npm run verify` before committing or pushing code. This runs linting, formatting, type-checking, and tests.
 - Commit messages should be simple and descriptive WITHOUT type prefixes (e.g., "Add Button component" not "feat(primitives): add button")
 - Check off tasks in ROADMAP.md as you complete them
 - Stop at each 🛑 CHECKPOINT and verify everything works
