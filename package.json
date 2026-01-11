@@ -20,6 +20,7 @@
     "test": "turbo test",
     "test:watch": "turbo test:watch",
     "test:coverage": "turbo test -- --coverage",
+    "verify": "npm run lint && npm run format:check && npm run typecheck && npm run test",
     "clean": "turbo clean && rm -rf node_modules",
     "prepare": "husky"
   },

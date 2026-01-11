@@ -156,7 +156,7 @@ Create @extracted/types package structure
 
 ### CL-2.1: Create Types Package Structure
 
-- [ ] Create `packages/types/package.json`:
+- [x] Create `packages/types/package.json`:
   ```json
   {
     "name": "@extracted/types",
@@ -175,8 +175,8 @@ Create @extracted/types package structure
     }
   }
   ```
-- [ ] Create `packages/types/tsconfig.json` extending base
-- [ ] Create `packages/types/src/index.ts` (empty export)
+- [x] Create `packages/types/tsconfig.json` extending base
+- [x] Create `packages/types/src/index.ts` (empty export)
 
 **Commit**: `Scaffold @extracted/types package`
 
@@ -184,17 +184,17 @@ Create @extracted/types package structure
 
 ### CL-2.2: Define Primitive Token Types
 
-- [ ] Create `packages/types/src/primitives/colors.ts`:
+- [x] Create `packages/types/src/primitives/colors.ts`:
   ```typescript
   export type SurfaceColorKey = string; // Narrowed during extraction
   export type TextColorKey = string;
   export type BorderColorKey = string;
   export type ShadowKey = string;
   ```
-- [ ] Create `packages/types/src/primitives/typography.ts`
-- [ ] Create `packages/types/src/primitives/spacing.ts`
-- [ ] Create `packages/types/src/primitives/index.ts` barrel export
-- [ ] Export from main `index.ts`
+- [x] Create `packages/types/src/primitives/typography.ts`
+- [x] Create `packages/types/src/primitives/spacing.ts`
+- [x] Create `packages/types/src/primitives/index.ts` barrel export
+- [x] Export from main `index.ts`
 
 **Commit**: `Add primitive token type definitions`
 
@@ -202,7 +202,7 @@ Create @extracted/types package structure
 
 ### CL-2.3: Define Component Variant Specs
 
-- [ ] Create `packages/types/src/components/button.ts`:
+- [x] Create `packages/types/src/components/button.ts`:
   ```typescript
   export interface ButtonVariantSpec {
     surface: string;
@@ -215,10 +215,10 @@ Create @extracted/types package structure
     fontWeight: string;
   }
   ```
-- [ ] Create `packages/types/src/components/card.ts`
-- [ ] Create `packages/types/src/components/input.ts`
-- [ ] Create `packages/types/src/components/text.ts`
-- [ ] Create `packages/types/src/components/index.ts` barrel export
+- [x] Create `packages/types/src/components/card.ts`
+- [x] Create `packages/types/src/components/input.ts`
+- [x] Create `packages/types/src/components/text.ts`
+- [x] Create `packages/types/src/components/index.ts` barrel export
 
 **Commit**: `Add component variant spec types`
 
@@ -226,9 +226,9 @@ Create @extracted/types package structure
 
 ### CL-2.4: Build and Verify Types Package
 
-- [ ] Run `npm run build --workspace=packages/types`
-- [ ] Verify `packages/types/dist/` contains `.js` and `.d.ts` files
-- [ ] Run `npm run typecheck --workspace=packages/types`
+- [x] Run `npm run build --workspace=packages/types`
+- [x] Verify `packages/types/dist/` contains `.js` and `.d.ts` files
+- [x] Run `npm run typecheck --workspace=packages/types`
 
 **Commit**: `Verify types package builds`
 
