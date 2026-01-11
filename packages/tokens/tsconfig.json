@@ -1,0 +1,7 @@
+{
+  "extends": "@extracted/tsconfig/base.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": ["src", "scripts", "__tests__"]
+}
