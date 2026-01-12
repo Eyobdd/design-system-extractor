@@ -7,6 +7,8 @@ import type {
   SpacingKey,
 } from '../primitives/index';
 
+export type InputVariant = 'default' | 'error' | 'ghost';
+
 export interface InputVariantSpec {
   surface: SurfaceColorKey;
   text: TextColorKey;
