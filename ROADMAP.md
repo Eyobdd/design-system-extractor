@@ -300,10 +300,10 @@ Create @extracted/types package structure
 
 ### CL-4.1: Create Primitives Package Structure
 
-- [ ] Create `packages/primitives/package.json`
-- [ ] Create `packages/primitives/tsconfig.json`
-- [ ] Install React: `npm install react react-dom --workspace=packages/primitives`
-- [ ] Install Vitest + Testing Library
+- [x] Create `packages/primitives/package.json`
+- [x] Create `packages/primitives/tsconfig.json`
+- [x] Install React: `npm install react react-dom --workspace=packages/primitives`
+- [x] Install Vitest + Testing Library
 
 **Commit**: `Scaffold @extracted/primitives package`
 
@@ -311,7 +311,7 @@ Create @extracted/types package structure
 
 ### CL-4.2: Create Allowed Props Whitelist
 
-- [ ] Create `packages/primitives/src/types/allowed-props.ts`:
+- [x] Create `packages/primitives/src/types/allowed-props.ts`:
   ```typescript
   export type AllowedButtonBehavioralProps = Pick<
     React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -326,8 +326,8 @@ Create @extracted/types package structure
     // ... full whitelist, NO id/className/style
   >;
   ```
-- [ ] Create `AllowedDivBehavioralProps`
-- [ ] Create `AllowedInputBehavioralProps`
+- [x] Create `AllowedDivBehavioralProps`
+- [x] Create `AllowedInputBehavioralProps`
 
 **Commit**: `Add allowed behavioral props whitelist`
 
@@ -335,11 +335,11 @@ Create @extracted/types package structure
 
 ### CL-4.3: Implement Button Primitive
 
-- [ ] Create `packages/primitives/src/Button/Button.tsx`:
+- [x] Create `packages/primitives/src/Button/Button.tsx`:
   - Accept only `AllowedButtonBehavioralProps` + `variant` + `children`
   - Use `forwardRef`
   - NO className, style, id
-- [ ] Create `packages/primitives/src/Button/index.ts`
+- [x] Create `packages/primitives/src/Button/index.ts`
 
 **Commit**: `Implement Button primitive component`
 
@@ -347,7 +347,7 @@ Create @extracted/types package structure
 
 ### CL-4.4: Add Button Tests
 
-- [ ] Create `packages/primitives/src/Button/Button.test.tsx`:
+- [x] Create `packages/primitives/src/Button/Button.test.tsx`:
   - Test: Renders children
   - Test: Forwards ref
   - Test: onClick fires
@@ -356,7 +356,7 @@ Create @extracted/types package structure
   - Test (compile): TypeScript prevents className
   - Test (compile): TypeScript prevents style
   - Test (compile): TypeScript prevents id
-- [ ] Run tests
+- [x] Run tests
 
 **Commit**: `Add Button behavior tests`
 
@@ -364,9 +364,9 @@ Create @extracted/types package structure
 
 ### CL-4.5: Implement Card Primitive
 
-- [ ] Create `packages/primitives/src/Card/Card.tsx`
-- [ ] Create `packages/primitives/src/Card/Card.test.tsx`
-- [ ] NO slots — just styled container
+- [x] Create `packages/primitives/src/Card/Card.tsx`
+- [x] Create `packages/primitives/src/Card/Card.test.tsx`
+- [x] NO slots — just styled container
 
 **Commit**: `Implement Card primitive component`
 
@@ -374,10 +374,10 @@ Create @extracted/types package structure
 
 ### CL-4.6: Implement Text and Input Primitives
 
-- [ ] Create `packages/primitives/src/Text/Text.tsx`
-- [ ] Create `packages/primitives/src/Input/Input.tsx`
-- [ ] Add tests for both
-- [ ] Create package barrel export
+- [x] Create `packages/primitives/src/Text/Text.tsx`
+- [x] Create `packages/primitives/src/Input/Input.tsx`
+- [x] Add tests for both
+- [x] Create package barrel export
 
 **Commit**: `Implement Text and Input primitives`
 
