@@ -20,3 +20,13 @@ export {
   type BatchComparisonItem,
   type BatchComparisonResult,
 } from './compare';
+
+export {
+  getRefinementSuggestions,
+  getRefinementSuggestionsBatch,
+  prioritizeSuggestions,
+  filterSuggestionsByCategory,
+  type RefinementSuggestion,
+  type RefinementResult,
+  type RefinementOptions,
+} from './refine';
