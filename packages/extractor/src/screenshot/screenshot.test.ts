@@ -18,9 +18,9 @@ vi.mock('sharp', () => ({
 }));
 
 import puppeteer from 'puppeteer';
-import { captureScreenshots, captureElementScreenshot } from '../src/screenshot/capture';
-import { captureFullPageStitched, getPageDimensions } from '../src/screenshot/stitch';
-import { CheckpointStore } from '../src/checkpoint/store';
+import { captureScreenshots, captureElementScreenshot } from './capture';
+import { captureFullPageStitched, getPageDimensions } from './stitch';
+import { CheckpointStore } from '../checkpoint/store';
 
 describe('Screenshot Capture', () => {
   let mockBrowser: Partial<Browser>;

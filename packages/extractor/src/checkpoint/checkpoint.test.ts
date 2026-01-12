@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
-import { CheckpointStore } from '../src/checkpoint/store';
-import type { ExtractionCheckpoint } from '../src/checkpoint/types';
+import { CheckpointStore } from './store';
+import type { ExtractionCheckpoint } from './types';
 
 describe('CheckpointStore', () => {
   let tempDir: string;
