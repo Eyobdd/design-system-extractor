@@ -25,3 +25,5 @@ export {
   createCheckpointRepository,
   type CheckpointRepository,
 } from './checkpoint-repository';
+
+export { GridFSImageStorage, createImageStorage, type ImageStorage } from './image-storage';

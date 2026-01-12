@@ -19,9 +19,16 @@ vi.mock('mongodb', () => {
     },
   };
 
+  const mockGridFSBucket = vi.fn(() => ({
+    openUploadStream: vi.fn(),
+    openDownloadStream: vi.fn(),
+    delete: vi.fn(),
+  }));
+
   return {
     MongoClient: vi.fn(() => mockClient),
     ObjectId: vi.fn(id => ({ toString: () => id || 'mock-object-id' })),
+    GridFSBucket: mockGridFSBucket,
   };
 });
 
@@ -534,6 +541,387 @@ describe('MongoCheckpointRepository', () => {
         extractedTokens: { colors: ['#fff'] },
         error: 'test error',
       });
+    });
+  });
+});
+
+describe('GridFSImageStorage', () => {
+  describe('detectContentType (via module)', () => {
+    it('detects PNG content type', async () => {
+      const { GridFSImageStorage } = await import('./image-storage');
+
+      // Access private method via prototype for testing
+      const storage = Object.create(GridFSImageStorage.prototype);
+      const detectContentType = (storage as { detectContentType: (f: string) => string })[
+        'detectContentType'
+      ].bind(storage);
+
+      expect(detectContentType('test.png')).toBe('image/png');
+      expect(detectContentType('test.PNG')).toBe('image/png');
+    });
+
+    it('detects JPEG content type', async () => {
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = Object.create(GridFSImageStorage.prototype);
+      const detectContentType = (storage as { detectContentType: (f: string) => string })[
+        'detectContentType'
+      ].bind(storage);
+
+      expect(detectContentType('test.jpg')).toBe('image/jpeg');
+      expect(detectContentType('test.jpeg')).toBe('image/jpeg');
+    });
+
+    it('detects GIF content type', async () => {
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = Object.create(GridFSImageStorage.prototype);
+      const detectContentType = (storage as { detectContentType: (f: string) => string })[
+        'detectContentType'
+      ].bind(storage);
+
+      expect(detectContentType('test.gif')).toBe('image/gif');
+    });
+
+    it('detects WebP content type', async () => {
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = Object.create(GridFSImageStorage.prototype);
+      const detectContentType = (storage as { detectContentType: (f: string) => string })[
+        'detectContentType'
+      ].bind(storage);
+
+      expect(detectContentType('test.webp')).toBe('image/webp');
+    });
+
+    it('returns octet-stream for unknown types', async () => {
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = Object.create(GridFSImageStorage.prototype);
+      const detectContentType = (storage as { detectContentType: (f: string) => string })[
+        'detectContentType'
+      ].bind(storage);
+
+      expect(detectContentType('test.xyz')).toBe('application/octet-stream');
+      expect(detectContentType('noextension')).toBe('application/octet-stream');
+    });
+  });
+
+  describe('createImageStorage', () => {
+    it('exports createImageStorage as a function', async () => {
+      const { createImageStorage } = await import('./image-storage');
+      expect(typeof createImageStorage).toBe('function');
+    });
+  });
+
+  describe('ImageStorage interface', () => {
+    it('GridFSImageStorage implements required methods', async () => {
+      const { GridFSImageStorage } = await import('./image-storage');
+
+      const methods = [
+        'upload',
+        'download',
+        'delete',
+        'getMetadata',
+        'exists',
+        'deleteByCheckpointId',
+        'listByCheckpointId',
+      ];
+
+      for (const method of methods) {
+        expect(
+          typeof GridFSImageStorage.prototype[method as keyof typeof GridFSImageStorage.prototype]
+        ).toBe('function');
+      }
+    });
+  });
+
+  describe('upload', () => {
+    it('calls openUploadStream with correct parameters', async () => {
+      const mockId = { toString: () => 'uploaded-id' };
+      let finishCallback: (() => void) | null = null;
+
+      const mockUploadStream = {
+        id: mockId,
+        write: vi.fn().mockReturnValue(true),
+        end: vi.fn(),
+        on: vi.fn().mockImplementation(function (this: any, event: string, cb: () => void) {
+          if (event === 'finish') finishCallback = cb;
+          return this;
+        }),
+        once: vi.fn().mockReturnThis(),
+        emit: vi.fn(),
+        removeListener: vi.fn().mockReturnThis(),
+        writable: true,
+      };
+
+      const mockBucket = {
+        openUploadStream: vi.fn().mockReturnValue(mockUploadStream),
+      };
+
+      const { GridFSImageStorage } = await import('./image-storage');
+      const mockDb = { collection: vi.fn() } as any;
+      const storage = new GridFSImageStorage(mockDb);
+      (storage as any).bucket = mockBucket;
+
+      const buffer = Buffer.from('test image data');
+      const uploadPromise = storage.upload(buffer, 'test.png', { checkpointId: 'cp-1' });
+
+      // Allow microtasks to run, then trigger finish
+      await new Promise(resolve => setImmediate(resolve));
+      if (finishCallback) (finishCallback as () => void)();
+
+      const result = await uploadPromise;
+
+      expect(mockBucket.openUploadStream).toHaveBeenCalledWith(
+        'test.png',
+        expect.objectContaining({
+          contentType: 'image/png',
+          metadata: expect.objectContaining({
+            checkpointId: 'cp-1',
+            uploadedAt: expect.any(Date),
+          }),
+        })
+      );
+      expect(result).toBe(mockId);
+    });
+  });
+
+  describe('download', () => {
+    it('calls openDownloadStream with correct ObjectId', async () => {
+      const mockId = { toString: () => 'download-id' } as any;
+      const testData = Buffer.from('downloaded image data');
+
+      const mockDownloadStream = {
+        on: vi.fn().mockImplementation(function (this: any, event: string, cb: any) {
+          if (event === 'data') {
+            setImmediate(() => cb(testData));
+          } else if (event === 'end') {
+            setImmediate(() => setImmediate(cb));
+          }
+          return this;
+        }),
+      };
+
+      const mockBucket = {
+        openDownloadStream: vi.fn().mockReturnValue(mockDownloadStream),
+      };
+
+      const { GridFSImageStorage } = await import('./image-storage');
+      const mockDb = { collection: vi.fn() } as any;
+      const storage = new GridFSImageStorage(mockDb);
+      (storage as any).bucket = mockBucket;
+
+      const result = await storage.download(mockId);
+
+      expect(mockBucket.openDownloadStream).toHaveBeenCalledWith(mockId);
+      expect(result).toEqual(testData);
+    });
+  });
+
+  describe('getMetadata', () => {
+    it('returns metadata when file exists', async () => {
+      const mockId = { toString: () => 'meta-id' } as any;
+      const uploadedAt = new Date('2024-01-01');
+      const mockFile = {
+        _id: mockId,
+        contentType: 'image/png',
+        metadata: {
+          checkpointId: 'cp-1',
+          type: 'viewport',
+          uploadedAt,
+        },
+      };
+
+      const mockCollection = {
+        findOne: vi.fn().mockResolvedValue(mockFile),
+      };
+      const mockDb = {
+        collection: vi.fn().mockReturnValue(mockCollection),
+      } as any;
+
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = new GridFSImageStorage(mockDb);
+
+      const result = await storage.getMetadata(mockId);
+
+      expect(mockDb.collection).toHaveBeenCalledWith('images.files');
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ _id: mockId });
+      expect(result).toEqual({
+        checkpointId: 'cp-1',
+        type: 'viewport',
+        contentType: 'image/png',
+        uploadedAt,
+      });
+    });
+
+    it('returns null when file does not exist', async () => {
+      const mockId = { toString: () => 'nonexistent-id' } as any;
+
+      const mockCollection = {
+        findOne: vi.fn().mockResolvedValue(null),
+      };
+      const mockDb = {
+        collection: vi.fn().mockReturnValue(mockCollection),
+      } as any;
+
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = new GridFSImageStorage(mockDb);
+
+      const result = await storage.getMetadata(mockId);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('exists', () => {
+    it('returns true when file exists', async () => {
+      const mockId = { toString: () => 'exists-id' } as any;
+
+      const mockCollection = {
+        countDocuments: vi.fn().mockResolvedValue(1),
+      };
+      const mockDb = {
+        collection: vi.fn().mockReturnValue(mockCollection),
+      } as any;
+
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = new GridFSImageStorage(mockDb);
+
+      const result = await storage.exists(mockId);
+
+      expect(mockCollection.countDocuments).toHaveBeenCalledWith({ _id: mockId }, { limit: 1 });
+      expect(result).toBe(true);
+    });
+
+    it('returns false when file does not exist', async () => {
+      const mockId = { toString: () => 'notexists-id' } as any;
+
+      const mockCollection = {
+        countDocuments: vi.fn().mockResolvedValue(0),
+      };
+      const mockDb = {
+        collection: vi.fn().mockReturnValue(mockCollection),
+      } as any;
+
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = new GridFSImageStorage(mockDb);
+
+      const result = await storage.exists(mockId);
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('deleteByCheckpointId', () => {
+    it('deletes all files for checkpoint and returns count', async () => {
+      const mockFiles = [
+        { _id: { toString: () => 'file-1' } },
+        { _id: { toString: () => 'file-2' } },
+      ];
+
+      const mockCollection = {
+        find: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue(mockFiles),
+        }),
+      };
+      const mockBucket = {
+        delete: vi.fn().mockResolvedValue(undefined),
+      };
+      const mockDb = {
+        collection: vi.fn().mockReturnValue(mockCollection),
+      } as any;
+
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = new GridFSImageStorage(mockDb);
+      (storage as any).bucket = mockBucket;
+
+      const result = await storage.deleteByCheckpointId('cp-1');
+
+      expect(mockCollection.find).toHaveBeenCalledWith({ 'metadata.checkpointId': 'cp-1' });
+      expect(mockBucket.delete).toHaveBeenCalledTimes(2);
+      expect(result).toBe(2);
+    });
+
+    it('returns 0 when no files found for checkpoint', async () => {
+      const mockCollection = {
+        find: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
+      };
+      const mockBucket = {
+        delete: vi.fn(),
+      };
+      const mockDb = {
+        collection: vi.fn().mockReturnValue(mockCollection),
+      } as any;
+
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = new GridFSImageStorage(mockDb);
+      (storage as any).bucket = mockBucket;
+
+      const result = await storage.deleteByCheckpointId('cp-nonexistent');
+
+      expect(mockBucket.delete).not.toHaveBeenCalled();
+      expect(result).toBe(0);
+    });
+  });
+
+  describe('listByCheckpointId', () => {
+    it('returns list of files for checkpoint', async () => {
+      const mockFiles = [
+        {
+          _id: { toString: () => 'file-1' },
+          filename: 'viewport.png',
+          metadata: { type: 'viewport' },
+        },
+        {
+          _id: { toString: () => 'file-2' },
+          filename: 'fullpage.png',
+          metadata: { type: 'fullPage' },
+        },
+      ];
+
+      const mockCollection = {
+        find: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue(mockFiles),
+        }),
+      };
+      const mockDb = {
+        collection: vi.fn().mockReturnValue(mockCollection),
+      } as any;
+
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = new GridFSImageStorage(mockDb);
+
+      const result = await storage.listByCheckpointId('cp-1');
+
+      expect(mockCollection.find).toHaveBeenCalledWith({ 'metadata.checkpointId': 'cp-1' });
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        id: mockFiles[0]._id,
+        filename: 'viewport.png',
+        type: 'viewport',
+      });
+      expect(result[1]).toEqual({
+        id: mockFiles[1]._id,
+        filename: 'fullpage.png',
+        type: 'fullPage',
+      });
+    });
+
+    it('returns empty array when no files for checkpoint', async () => {
+      const mockCollection = {
+        find: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
+      };
+      const mockDb = {
+        collection: vi.fn().mockReturnValue(mockCollection),
+      } as any;
+
+      const { GridFSImageStorage } = await import('./image-storage');
+      const storage = new GridFSImageStorage(mockDb);
+
+      const result = await storage.listByCheckpointId('cp-empty');
+
+      expect(result).toHaveLength(0);
     });
   });
 });
