@@ -7,3 +7,4 @@ export * from './vision';
 export * from './dom';
 export * from './tokens';
 export * from './comparison';
+export * from './extractor';

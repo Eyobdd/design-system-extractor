@@ -1,0 +1,8 @@
+{
+  "id": "test-uuid-1234",
+  "url": "https://example.com",
+  "status": "complete",
+  "progress": 100,
+  "startedAt": "2026-01-12T08:22:34.156Z",
+  "updatedAt": "2026-01-12T08:22:34.156Z"
+}
