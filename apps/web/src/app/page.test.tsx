@@ -1,6 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import HomePage from './page';
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
+}));
 
 describe('HomePage', () => {
   it('renders the main heading', () => {
@@ -13,8 +19,18 @@ describe('HomePage', () => {
     expect(screen.getByText(/Extract design tokens/i)).toBeInTheDocument();
   });
 
-  it('renders the placeholder message', () => {
+  it('renders the URL input', () => {
     render(<HomePage />);
-    expect(screen.getByText(/URL input coming soon/i)).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /website url/i })).toBeInTheDocument();
+  });
+
+  it('renders the extract button', () => {
+    render(<HomePage />);
+    expect(screen.getByRole('button', { name: /extract/i })).toBeInTheDocument();
+  });
+
+  it('renders helper text', () => {
+    render(<HomePage />);
+    expect(screen.getByText(/Enter any website URL/i)).toBeInTheDocument();
   });
 });
