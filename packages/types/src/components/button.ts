@@ -7,6 +7,8 @@ import type {
   FontWeightKey,
 } from '../primitives/index';
 
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+
 export interface ButtonVariantSpec {
   surface: SurfaceColorKey;
   text: TextColorKey;

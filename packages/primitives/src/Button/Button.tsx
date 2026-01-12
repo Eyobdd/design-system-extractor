@@ -1,8 +1,9 @@
 import { forwardRef, type ReactNode } from 'react';
-import type { AllowedButtonBehavioralProps } from '../types';
+import type { ButtonVariant } from '@extracted/types';
+import type { AllowedButtonBehavioralProps } from '../types/allowed-props';
 
 export interface ButtonProps extends AllowedButtonBehavioralProps {
-  variant?: string;
+  variant: ButtonVariant;
   children?: ReactNode;
 }
 
@@ -12,11 +13,11 @@ export interface ButtonProps extends AllowedButtonBehavioralProps {
  * Styling is controlled entirely through the variant prop and extracted tokens.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant, children, ...behavioralProps },
+  { variant, children, type = 'button', ...behavioralProps },
   ref
 ) {
   return (
-    <button ref={ref} data-variant={variant} {...behavioralProps}>
+    <button ref={ref} data-variant={variant} type={type} {...behavioralProps}>
       {children}
     </button>
   );
