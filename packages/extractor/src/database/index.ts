@@ -33,3 +33,10 @@ export {
   createDatabaseCheckpointStore,
   type CheckpointStoreInterface,
 } from './database-checkpoint-store';
+
+export {
+  getDatabaseConfigFromEnv,
+  validateDatabaseConfig,
+  isDatabaseConfigured,
+  type DatabaseEnvironment,
+} from './config';

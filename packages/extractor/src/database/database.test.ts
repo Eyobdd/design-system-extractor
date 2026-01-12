@@ -1317,3 +1317,259 @@ describe('DatabaseCheckpointStore', () => {
     });
   });
 });
+
+describe('Database Config', () => {
+  describe('getDatabaseConfigFromEnv', () => {
+    it('returns config from environment', async () => {
+      const { getDatabaseConfigFromEnv } = await import('./config');
+
+      const env = {
+        MONGODB_URI: 'mongodb://localhost:27017',
+        MONGODB_DATABASE: 'test_db',
+      };
+
+      const config = getDatabaseConfigFromEnv(env);
+
+      expect(config.uri).toBe('mongodb://localhost:27017');
+      expect(config.databaseName).toBe('test_db');
+    });
+
+    it('supports mongodb+srv:// URI format', async () => {
+      const { getDatabaseConfigFromEnv } = await import('./config');
+
+      const env = {
+        MONGODB_URI: 'mongodb+srv://cluster.mongodb.net',
+      };
+
+      const config = getDatabaseConfigFromEnv(env);
+
+      expect(config.uri).toBe('mongodb+srv://cluster.mongodb.net');
+    });
+
+    it('uses default database name when not provided', async () => {
+      const { getDatabaseConfigFromEnv } = await import('./config');
+
+      const env = {
+        MONGODB_URI: 'mongodb://localhost:27017',
+      };
+
+      const config = getDatabaseConfigFromEnv(env);
+
+      expect(config.databaseName).toBe('design_extractor');
+    });
+
+    it('throws error when MONGODB_URI is missing', async () => {
+      const { getDatabaseConfigFromEnv } = await import('./config');
+
+      expect(() => getDatabaseConfigFromEnv({})).toThrow(
+        'MONGODB_URI environment variable is required'
+      );
+    });
+
+    it('parses pool size settings', async () => {
+      const { getDatabaseConfigFromEnv } = await import('./config');
+
+      const env = {
+        MONGODB_URI: 'mongodb://localhost:27017',
+        MONGODB_MAX_POOL_SIZE: '20',
+        MONGODB_MIN_POOL_SIZE: '5',
+        MONGODB_CONNECT_TIMEOUT_MS: '5000',
+      };
+
+      const config = getDatabaseConfigFromEnv(env);
+
+      expect(config.maxPoolSize).toBe(20);
+      expect(config.minPoolSize).toBe(5);
+      expect(config.connectTimeoutMs).toBe(5000);
+    });
+
+    it('accepts zero as valid minPoolSize', async () => {
+      const { getDatabaseConfigFromEnv } = await import('./config');
+
+      const env = {
+        MONGODB_URI: 'mongodb://localhost:27017',
+        MONGODB_MIN_POOL_SIZE: '0',
+      };
+
+      const config = getDatabaseConfigFromEnv(env);
+
+      expect(config.minPoolSize).toBe(0);
+    });
+
+    it('ignores invalid pool size values', async () => {
+      const { getDatabaseConfigFromEnv } = await import('./config');
+
+      const env = {
+        MONGODB_URI: 'mongodb://localhost:27017',
+        MONGODB_MAX_POOL_SIZE: 'invalid',
+        MONGODB_MIN_POOL_SIZE: '-5',
+      };
+
+      const config = getDatabaseConfigFromEnv(env);
+
+      expect(config.maxPoolSize).toBeUndefined();
+      expect(config.minPoolSize).toBeUndefined();
+    });
+
+    it('ignores zero and negative maxPoolSize', async () => {
+      const { getDatabaseConfigFromEnv } = await import('./config');
+
+      const zeroConfig = getDatabaseConfigFromEnv({
+        MONGODB_URI: 'mongodb://localhost:27017',
+        MONGODB_MAX_POOL_SIZE: '0',
+      });
+      expect(zeroConfig.maxPoolSize).toBeUndefined();
+
+      const negativeConfig = getDatabaseConfigFromEnv({
+        MONGODB_URI: 'mongodb://localhost:27017',
+        MONGODB_MAX_POOL_SIZE: '-10',
+      });
+      expect(negativeConfig.maxPoolSize).toBeUndefined();
+    });
+
+    it('ignores invalid connectTimeoutMs values', async () => {
+      const { getDatabaseConfigFromEnv } = await import('./config');
+
+      const invalidConfig = getDatabaseConfigFromEnv({
+        MONGODB_URI: 'mongodb://localhost:27017',
+        MONGODB_CONNECT_TIMEOUT_MS: 'abc',
+      });
+      expect(invalidConfig.connectTimeoutMs).toBeUndefined();
+
+      const zeroConfig = getDatabaseConfigFromEnv({
+        MONGODB_URI: 'mongodb://localhost:27017',
+        MONGODB_CONNECT_TIMEOUT_MS: '0',
+      });
+      expect(zeroConfig.connectTimeoutMs).toBeUndefined();
+    });
+  });
+
+  describe('validateDatabaseConfig', () => {
+    it('returns empty array for valid config with mongodb://', async () => {
+      const { validateDatabaseConfig } = await import('./config');
+
+      const errors = validateDatabaseConfig({
+        uri: 'mongodb://localhost:27017',
+        maxPoolSize: 10,
+        minPoolSize: 2,
+      });
+
+      expect(errors).toHaveLength(0);
+    });
+
+    it('returns empty array for valid config with mongodb+srv://', async () => {
+      const { validateDatabaseConfig } = await import('./config');
+
+      const errors = validateDatabaseConfig({
+        uri: 'mongodb+srv://cluster.mongodb.net',
+      });
+
+      expect(errors).toHaveLength(0);
+    });
+
+    it('returns error for missing URI', async () => {
+      const { validateDatabaseConfig } = await import('./config');
+
+      const errors = validateDatabaseConfig({ uri: '' });
+
+      expect(errors).toContain('Database URI is required');
+    });
+
+    it('returns error for invalid URI prefix', async () => {
+      const { validateDatabaseConfig } = await import('./config');
+
+      const errors = validateDatabaseConfig({ uri: 'http://localhost:27017' });
+
+      expect(errors).toContain('Database URI must start with mongodb:// or mongodb+srv://');
+    });
+
+    it('returns error for maxPoolSize less than 1', async () => {
+      const { validateDatabaseConfig } = await import('./config');
+
+      const errors = validateDatabaseConfig({
+        uri: 'mongodb://localhost:27017',
+        maxPoolSize: 0,
+      });
+
+      expect(errors).toContain('maxPoolSize must be at least 1');
+    });
+
+    it('returns error for negative minPoolSize', async () => {
+      const { validateDatabaseConfig } = await import('./config');
+
+      const errors = validateDatabaseConfig({
+        uri: 'mongodb://localhost:27017',
+        minPoolSize: -1,
+      });
+
+      expect(errors).toContain('minPoolSize must be at least 0');
+    });
+
+    it('returns error for connectTimeoutMs less than 1', async () => {
+      const { validateDatabaseConfig } = await import('./config');
+
+      const errors = validateDatabaseConfig({
+        uri: 'mongodb://localhost:27017',
+        connectTimeoutMs: 0,
+      });
+
+      expect(errors).toContain('connectTimeoutMs must be at least 1');
+    });
+
+    it('returns error when minPoolSize exceeds maxPoolSize', async () => {
+      const { validateDatabaseConfig } = await import('./config');
+
+      const errors = validateDatabaseConfig({
+        uri: 'mongodb://localhost:27017',
+        maxPoolSize: 5,
+        minPoolSize: 10,
+      });
+
+      expect(errors).toContain('minPoolSize cannot be greater than maxPoolSize');
+    });
+
+    it('accumulates multiple validation errors', async () => {
+      const { validateDatabaseConfig } = await import('./config');
+
+      const errors = validateDatabaseConfig({
+        uri: 'http://invalid',
+        maxPoolSize: 0,
+        minPoolSize: -1,
+        connectTimeoutMs: 0,
+      });
+
+      expect(errors).toHaveLength(4);
+      expect(errors).toContain('Database URI must start with mongodb:// or mongodb+srv://');
+      expect(errors).toContain('maxPoolSize must be at least 1');
+      expect(errors).toContain('minPoolSize must be at least 0');
+      expect(errors).toContain('connectTimeoutMs must be at least 1');
+    });
+  });
+
+  describe('isDatabaseConfigured', () => {
+    it('returns true when MONGODB_URI is set', async () => {
+      const { isDatabaseConfigured } = await import('./config');
+
+      expect(isDatabaseConfigured({ MONGODB_URI: 'mongodb://localhost' })).toBe(true);
+    });
+
+    it('returns false when MONGODB_URI is not set', async () => {
+      const { isDatabaseConfigured } = await import('./config');
+
+      expect(isDatabaseConfigured({})).toBe(false);
+    });
+
+    it('returns false when MONGODB_URI is undefined', async () => {
+      const { isDatabaseConfigured } = await import('./config');
+
+      expect(isDatabaseConfigured({ MONGODB_URI: undefined })).toBe(false);
+    });
+
+    it('returns true even for empty string (truthy check)', async () => {
+      const { isDatabaseConfigured } = await import('./config');
+
+      // Empty string is falsy, so returns false
+      expect(isDatabaseConfigured({ MONGODB_URI: '' })).toBe(false);
+    });
+  });
+});
