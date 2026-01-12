@@ -1,13 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PNG } from 'pngjs';
 import type { ColorHistogram } from './color';
-import { calculateSSIM } from './ssim';
+import type { BatchComparisonResult } from './compare';
+import { calculateSSIM, isSSIMPass } from './ssim';
 import {
   extractColorHistogram,
   compareHistograms,
   calculateColorSimilarity,
   isColorPass,
 } from './color';
+import { compareComponents, compareComponentsBatch, getComparisonSummary } from './compare';
 
 vi.mock('pixelmatch', () => ({
   default: vi.fn(() => 0),
@@ -109,25 +111,19 @@ describe('SSIM Comparison', () => {
   });
 
   describe('isSSIMPass', () => {
-    it('returns true when score meets threshold', async () => {
-      const { isSSIMPass } = await import('./ssim');
-
+    it('returns true when score meets threshold', () => {
       expect(isSSIMPass(0.95)).toBe(true);
       expect(isSSIMPass(0.99)).toBe(true);
       expect(isSSIMPass(1.0)).toBe(true);
     });
 
-    it('returns false when score below threshold', async () => {
-      const { isSSIMPass } = await import('./ssim');
-
+    it('returns false when score below threshold', () => {
       expect(isSSIMPass(0.94)).toBe(false);
       expect(isSSIMPass(0.5)).toBe(false);
       expect(isSSIMPass(0)).toBe(false);
     });
 
-    it('respects custom threshold', async () => {
-      const { isSSIMPass } = await import('./ssim');
-
+    it('respects custom threshold', () => {
       expect(isSSIMPass(0.8, 0.8)).toBe(true);
       expect(isSSIMPass(0.79, 0.8)).toBe(false);
     });
@@ -420,6 +416,328 @@ describe('Color Comparison', () => {
     it('uses default threshold of 0.95', async () => {
       expect(isColorPass(0.95)).toBe(true);
       expect(isColorPass(0.949)).toBe(false);
+    });
+  });
+});
+
+describe('Combined Comparison', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const pixelmatch = (await import('pixelmatch')).default;
+    vi.mocked(pixelmatch).mockReturnValue(0);
+  });
+
+  describe('compareComponents', () => {
+    it('returns all required fields in result', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const result = await compareComponents(buffer, buffer);
+
+      expect(result).toHaveProperty('ssimScore');
+      expect(result).toHaveProperty('colorScore');
+      expect(result).toHaveProperty('combinedScore');
+      expect(result).toHaveProperty('passed');
+      expect(result).toHaveProperty('ssimResult');
+      expect(result).toHaveProperty('colorResult');
+      expect(typeof result.ssimScore).toBe('number');
+      expect(typeof result.colorScore).toBe('number');
+      expect(typeof result.combinedScore).toBe('number');
+      expect(typeof result.passed).toBe('boolean');
+    });
+
+    it('returns high scores for identical images', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const result = await compareComponents(buffer, buffer);
+
+      expect(result.ssimScore).toBe(1);
+      expect(result.colorScore).toBe(1);
+      expect(result.combinedScore).toBe(1);
+    });
+
+    it('calculates combined score with default weights (60% SSIM, 40% color)', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const result = await compareComponents(buffer, buffer);
+
+      const expectedCombined = result.ssimScore * 0.6 + result.colorScore * 0.4;
+      expect(result.combinedScore).toBeCloseTo(expectedCombined, 5);
+    });
+
+    it('passes when combined score >= threshold', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const result = await compareComponents(buffer, buffer, { passThreshold: 0.5 });
+
+      expect(result.combinedScore).toBeGreaterThanOrEqual(0.5);
+      expect(result.passed).toBe(true);
+    });
+
+    it('fails when combined score < threshold', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const result = await compareComponents(buffer, buffer, { passThreshold: 1.1 });
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('respects custom passThreshold', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const resultLow = await compareComponents(buffer, buffer, { passThreshold: 0.5 });
+      const resultHigh = await compareComponents(buffer, buffer, { passThreshold: 1.1 });
+
+      expect(resultLow.passed).toBe(true);
+      expect(resultHigh.passed).toBe(false);
+    });
+
+    it('respects custom weights', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const result = await compareComponents(buffer, buffer, {
+        ssimWeight: 0.8,
+        colorWeight: 0.2,
+      });
+
+      const expectedCombined = result.ssimScore * 0.8 + result.colorScore * 0.2;
+      expect(result.combinedScore).toBeCloseTo(expectedCombined, 5);
+    });
+
+    it('generates diff image when requested', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const result = await compareComponents(buffer, buffer, { generateDiff: true });
+
+      expect(result.diffImage).toBeDefined();
+      expect(result.diffImage).toBeInstanceOf(Buffer);
+    });
+
+    it('does not generate diff image by default', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const result = await compareComponents(buffer, buffer);
+
+      expect(result.diffImage).toBeUndefined();
+    });
+
+    it('includes nested ssimResult with correct structure', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const result = await compareComponents(buffer, buffer);
+
+      expect(result.ssimResult).toHaveProperty('score');
+      expect(result.ssimResult).toHaveProperty('diffPixels');
+      expect(result.ssimResult).toHaveProperty('totalPixels');
+      expect(result.ssimResult.score).toBe(result.ssimScore);
+    });
+
+    it('includes nested colorResult with histograms', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const result = await compareComponents(buffer, buffer);
+
+      expect(result.colorResult).toHaveProperty('score');
+      expect(result.colorResult).toHaveProperty('histogram1');
+      expect(result.colorResult).toHaveProperty('histogram2');
+      expect(result.colorResult.score).toBe(result.colorScore);
+    });
+  });
+
+  describe('compareComponentsBatch', () => {
+    it('compares multiple components and preserves order', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const results = await compareComponentsBatch([
+        { componentId: 'button', originalImage: buffer, generatedImage: buffer },
+        { componentId: 'card', originalImage: buffer, generatedImage: buffer },
+        { componentId: 'input', originalImage: buffer, generatedImage: buffer },
+      ]);
+
+      expect(results).toHaveLength(3);
+      expect(results[0]?.componentId).toBe('button');
+      expect(results[1]?.componentId).toBe('card');
+      expect(results[2]?.componentId).toBe('input');
+    });
+
+    it('returns full ComparisonResult for each component', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const results = await compareComponentsBatch([
+        { componentId: 'button', originalImage: buffer, generatedImage: buffer },
+      ]);
+
+      const result = results[0]?.result;
+      expect(result).toHaveProperty('ssimScore');
+      expect(result).toHaveProperty('colorScore');
+      expect(result).toHaveProperty('combinedScore');
+      expect(result).toHaveProperty('passed');
+      expect(result).toHaveProperty('ssimResult');
+      expect(result).toHaveProperty('colorResult');
+    });
+
+    it('passes options to all comparisons', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const results = await compareComponentsBatch(
+        [
+          { componentId: 'button', originalImage: buffer, generatedImage: buffer },
+          { componentId: 'card', originalImage: buffer, generatedImage: buffer },
+        ],
+        { passThreshold: 0.5, ssimWeight: 0.7, colorWeight: 0.3 }
+      );
+
+      for (const item of results) {
+        const expectedCombined = item.result.ssimScore * 0.7 + item.result.colorScore * 0.3;
+        expect(item.result.combinedScore).toBeCloseTo(expectedCombined, 5);
+        expect(item.result.passed).toBe(true);
+      }
+    });
+
+    it('returns empty array for empty input', async () => {
+      const results = await compareComponentsBatch([]);
+
+      expect(results).toEqual([]);
+    });
+
+    it('handles single component', async () => {
+      const png = new PNG({ width: 10, height: 10 });
+      png.data.fill(255);
+      const buffer = PNG.sync.write(png);
+
+      const results = await compareComponentsBatch(
+        [{ componentId: 'solo', originalImage: buffer, generatedImage: buffer }],
+        { passThreshold: 0.5 }
+      );
+
+      expect(results).toHaveLength(1);
+      expect(results[0]?.componentId).toBe('solo');
+      expect(results[0]?.result.combinedScore).toBeGreaterThanOrEqual(0.5);
+    });
+  });
+
+  describe('getComparisonSummary', () => {
+    const createMockResult = (
+      componentId: string,
+      combinedScore: number,
+      passed: boolean
+    ): BatchComparisonResult => ({
+      componentId,
+      result: {
+        ssimScore: combinedScore,
+        colorScore: combinedScore,
+        combinedScore,
+        passed,
+        ssimResult: { score: combinedScore, diffPixels: 0, totalPixels: 100 },
+        colorResult: {
+          score: combinedScore,
+          histogram1: { red: [], green: [], blue: [] },
+          histogram2: { red: [], green: [], blue: [] },
+        },
+      },
+    });
+
+    it('calculates correct totals for mixed results', () => {
+      const mockResults: BatchComparisonResult[] = [
+        createMockResult('button', 1, true),
+        createMockResult('card', 0.8, false),
+      ];
+
+      const summary = getComparisonSummary(mockResults);
+
+      expect(summary.total).toBe(2);
+      expect(summary.passed).toBe(1);
+      expect(summary.failed).toBe(1);
+      expect(summary.averageScore).toBe(0.9);
+    });
+
+    it('handles all passing results', () => {
+      const mockResults: BatchComparisonResult[] = [
+        createMockResult('button', 1, true),
+        createMockResult('card', 0.98, true),
+        createMockResult('input', 0.96, true),
+      ];
+
+      const summary = getComparisonSummary(mockResults);
+
+      expect(summary.total).toBe(3);
+      expect(summary.passed).toBe(3);
+      expect(summary.failed).toBe(0);
+      expect(summary.averageScore).toBeCloseTo(0.98, 2);
+    });
+
+    it('handles all failing results', () => {
+      const mockResults: BatchComparisonResult[] = [
+        createMockResult('button', 0.5, false),
+        createMockResult('card', 0.6, false),
+      ];
+
+      const summary = getComparisonSummary(mockResults);
+
+      expect(summary.total).toBe(2);
+      expect(summary.passed).toBe(0);
+      expect(summary.failed).toBe(2);
+      expect(summary.averageScore).toBe(0.55);
+    });
+
+    it('handles single result', () => {
+      const mockResults: BatchComparisonResult[] = [createMockResult('button', 0.95, true)];
+
+      const summary = getComparisonSummary(mockResults);
+
+      expect(summary.total).toBe(1);
+      expect(summary.passed).toBe(1);
+      expect(summary.failed).toBe(0);
+      expect(summary.averageScore).toBe(0.95);
+    });
+
+    it('handles empty results array', () => {
+      const summary = getComparisonSummary([]);
+
+      expect(summary.total).toBe(0);
+      expect(summary.passed).toBe(0);
+      expect(summary.failed).toBe(0);
+      expect(summary.averageScore).toBe(0);
+    });
+
+    it('calculates average score correctly with varying scores', () => {
+      const mockResults: BatchComparisonResult[] = [
+        createMockResult('a', 1.0, true),
+        createMockResult('b', 0.8, false),
+        createMockResult('c', 0.6, false),
+        createMockResult('d', 0.4, false),
+      ];
+
+      const summary = getComparisonSummary(mockResults);
+
+      expect(summary.averageScore).toBe(0.7);
     });
   });
 });

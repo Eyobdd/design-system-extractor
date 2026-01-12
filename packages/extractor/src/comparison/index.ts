@@ -10,3 +10,13 @@ export {
   type ColorComparisonResult,
   type ColorComparisonOptions,
 } from './color';
+
+export {
+  compareComponents,
+  compareComponentsBatch,
+  getComparisonSummary,
+  type ComparisonResult,
+  type ComparisonOptions,
+  type BatchComparisonItem,
+  type BatchComparisonResult,
+} from './compare';
