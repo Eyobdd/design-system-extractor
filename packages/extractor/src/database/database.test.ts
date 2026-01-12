@@ -925,3 +925,395 @@ describe('GridFSImageStorage', () => {
     });
   });
 });
+
+describe('DatabaseCheckpointStore', () => {
+  const mockRepository = {
+    ensureIndexes: vi.fn().mockResolvedValue(undefined),
+    exists: vi.fn().mockResolvedValue(false),
+    create: vi.fn().mockResolvedValue('created-id'),
+    findById: vi.fn(),
+    update: vi.fn().mockResolvedValue(undefined),
+    delete: vi.fn().mockResolvedValue(undefined),
+    updateScreenshotIds: vi.fn().mockResolvedValue(undefined),
+    getScreenshotIds: vi.fn(),
+    listByStatus: vi.fn().mockResolvedValue([]),
+    listRecent: vi.fn().mockResolvedValue([]),
+  };
+
+  const mockImageStorage = {
+    upload: vi.fn().mockResolvedValue({ toString: () => 'uploaded-id' }),
+    download: vi.fn().mockResolvedValue(Buffer.from('image data')),
+    delete: vi.fn().mockResolvedValue(undefined),
+    deleteByCheckpointId: vi.fn().mockResolvedValue(2),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('initialize', () => {
+    it('calls repository.ensureIndexes', async () => {
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+
+      await store.initialize();
+
+      expect(mockRepository.ensureIndexes).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('save', () => {
+    it('creates new checkpoint when it does not exist', async () => {
+      mockRepository.exists.mockResolvedValueOnce(false);
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+      (store as any).imageStorage = mockImageStorage;
+
+      const checkpoint = {
+        id: 'cp-1',
+        url: 'https://example.com',
+        status: 'pending' as const,
+        progress: 0,
+        startedAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await store.save(checkpoint);
+
+      expect(mockRepository.exists).toHaveBeenCalledWith('cp-1');
+      expect(mockRepository.create).toHaveBeenCalledWith(checkpoint);
+    });
+
+    it('updates existing checkpoint instead of creating', async () => {
+      mockRepository.exists.mockResolvedValueOnce(true);
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+      (store as any).imageStorage = mockImageStorage;
+
+      const checkpoint = {
+        id: 'cp-existing',
+        url: 'https://example.com',
+        status: 'pending' as const,
+        progress: 50,
+        startedAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      await store.save(checkpoint);
+
+      expect(mockRepository.exists).toHaveBeenCalledWith('cp-existing');
+      expect(mockRepository.create).not.toHaveBeenCalled();
+      expect(mockRepository.update).toHaveBeenCalled();
+    });
+
+    it('uploads screenshots and updates IDs when screenshots provided', async () => {
+      mockRepository.exists.mockResolvedValueOnce(false);
+      const viewportId = { toString: () => 'viewport-id' };
+      const fullPageId = { toString: () => 'fullpage-id' };
+      mockImageStorage.upload.mockResolvedValueOnce(viewportId).mockResolvedValueOnce(fullPageId);
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+      (store as any).imageStorage = mockImageStorage;
+
+      const checkpoint = {
+        id: 'cp-with-screenshots',
+        url: 'https://example.com',
+        status: 'screenshot' as const,
+        progress: 25,
+        startedAt: new Date(),
+        updatedAt: new Date(),
+        screenshots: {
+          viewport: Buffer.from('viewport image'),
+          fullPage: Buffer.from('fullpage image'),
+        },
+      };
+
+      await store.save(checkpoint);
+
+      expect(mockImageStorage.upload).toHaveBeenCalledTimes(2);
+      expect(mockImageStorage.upload).toHaveBeenCalledWith(
+        checkpoint.screenshots.viewport,
+        'cp-with-screenshots_viewport.png',
+        expect.objectContaining({ checkpointId: 'cp-with-screenshots', type: 'viewport' })
+      );
+      expect(mockRepository.updateScreenshotIds).toHaveBeenCalledWith('cp-with-screenshots', {
+        viewport: viewportId,
+        fullPage: fullPageId,
+      });
+    });
+  });
+
+  describe('load', () => {
+    it('returns null when checkpoint not found', async () => {
+      mockRepository.findById.mockResolvedValueOnce(null);
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+
+      const result = await store.load('nonexistent');
+
+      expect(result).toBeNull();
+      expect(mockRepository.findById).toHaveBeenCalledWith('nonexistent');
+    });
+
+    it('returns checkpoint without screenshots when none stored', async () => {
+      const checkpoint = {
+        id: 'cp-1',
+        url: 'https://example.com',
+        status: 'pending',
+        progress: 0,
+        startedAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValueOnce(checkpoint);
+      mockRepository.getScreenshotIds.mockResolvedValueOnce(null);
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+
+      const result = await store.load('cp-1');
+
+      expect(result).toEqual(checkpoint);
+      expect(result?.screenshots).toBeUndefined();
+    });
+
+    it('downloads and attaches screenshots when IDs exist', async () => {
+      const checkpoint = {
+        id: 'cp-1',
+        url: 'https://example.com',
+        status: 'screenshot',
+        progress: 25,
+        startedAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const screenshotIds = {
+        viewport: { toString: () => 'viewport-id' },
+        fullPage: { toString: () => 'fullpage-id' },
+      };
+      const viewportBuffer = Buffer.from('viewport data');
+      const fullPageBuffer = Buffer.from('fullpage data');
+
+      mockRepository.findById.mockResolvedValueOnce(checkpoint);
+      mockRepository.getScreenshotIds.mockResolvedValueOnce(screenshotIds);
+      mockImageStorage.download
+        .mockResolvedValueOnce(viewportBuffer)
+        .mockResolvedValueOnce(fullPageBuffer);
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+      (store as any).imageStorage = mockImageStorage;
+
+      const result = await store.load('cp-1');
+
+      expect(mockImageStorage.download).toHaveBeenCalledTimes(2);
+      expect(result?.screenshots).toEqual({
+        viewport: viewportBuffer,
+        fullPage: fullPageBuffer,
+      });
+    });
+  });
+
+  describe('update', () => {
+    it('updates metadata fields via repository', async () => {
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+      (store as any).imageStorage = mockImageStorage;
+
+      await store.update('cp-1', { status: 'vision' as const, progress: 50 });
+
+      expect(mockRepository.update).toHaveBeenCalledWith('cp-1', {
+        status: 'vision',
+        progress: 50,
+      });
+    });
+
+    it('replaces screenshots when provided in update', async () => {
+      const existingIds = {
+        viewport: { toString: () => 'old-viewport' },
+        fullPage: { toString: () => 'old-fullpage' },
+      };
+      const newViewportId = { toString: () => 'new-viewport' };
+      const newFullPageId = { toString: () => 'new-fullpage' };
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+      (store as any).imageStorage = mockImageStorage;
+
+      mockRepository.getScreenshotIds.mockResolvedValueOnce(existingIds);
+      mockImageStorage.upload
+        .mockResolvedValueOnce(newViewportId)
+        .mockResolvedValueOnce(newFullPageId);
+
+      const newScreenshots = {
+        viewport: Buffer.from('new viewport'),
+        fullPage: Buffer.from('new fullpage'),
+      };
+
+      await store.update('cp-1', { screenshots: newScreenshots });
+
+      expect(mockImageStorage.delete).toHaveBeenCalledWith(existingIds.viewport);
+      expect(mockImageStorage.delete).toHaveBeenCalledWith(existingIds.fullPage);
+      expect(mockImageStorage.upload).toHaveBeenCalledTimes(2);
+      expect(mockRepository.updateScreenshotIds).toHaveBeenCalledWith('cp-1', {
+        viewport: newViewportId,
+        fullPage: newFullPageId,
+      });
+    });
+  });
+
+  describe('list', () => {
+    it('returns array of checkpoint IDs', async () => {
+      const checkpoints = [
+        { id: 'cp-1', url: 'https://example1.com' },
+        { id: 'cp-2', url: 'https://example2.com' },
+        { id: 'cp-3', url: 'https://example3.com' },
+      ];
+      mockRepository.listRecent.mockResolvedValueOnce(checkpoints);
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+
+      const result = await store.list();
+
+      expect(mockRepository.listRecent).toHaveBeenCalledWith(1000);
+      expect(result).toEqual(['cp-1', 'cp-2', 'cp-3']);
+    });
+
+    it('returns empty array when no checkpoints', async () => {
+      mockRepository.listRecent.mockResolvedValueOnce([]);
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+
+      const result = await store.list();
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('delete', () => {
+    it('deletes images and checkpoint', async () => {
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+      (store as any).imageStorage = mockImageStorage;
+
+      await store.delete('cp-1');
+
+      expect(mockImageStorage.deleteByCheckpointId).toHaveBeenCalledWith('cp-1');
+      expect(mockRepository.delete).toHaveBeenCalledWith('cp-1');
+    });
+
+    it('deletes images before checkpoint data', async () => {
+      const callOrder: string[] = [];
+      mockImageStorage.deleteByCheckpointId.mockImplementationOnce(() => {
+        callOrder.push('images');
+        return Promise.resolve(1);
+      });
+      mockRepository.delete.mockImplementationOnce(() => {
+        callOrder.push('checkpoint');
+        return Promise.resolve();
+      });
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+      (store as any).imageStorage = mockImageStorage;
+
+      await store.delete('cp-1');
+
+      expect(callOrder).toEqual(['images', 'checkpoint']);
+    });
+  });
+
+  describe('listByStatus', () => {
+    it('delegates to repository.listByStatus', async () => {
+      const checkpoints = [
+        { id: 'cp-1', status: 'pending', progress: 0 },
+        { id: 'cp-2', status: 'pending', progress: 0 },
+      ];
+      mockRepository.listByStatus.mockResolvedValueOnce(checkpoints);
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+
+      const result = await store.listByStatus('pending');
+
+      expect(mockRepository.listByStatus).toHaveBeenCalledWith('pending');
+      expect(result).toEqual(checkpoints);
+    });
+  });
+
+  describe('listRecent', () => {
+    it('delegates to repository.listRecent with limit', async () => {
+      const checkpoints = [{ id: 'cp-recent', status: 'complete', progress: 100 }];
+      mockRepository.listRecent.mockResolvedValueOnce(checkpoints);
+
+      const { DatabaseCheckpointStore } = await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+      const store = new DatabaseCheckpointStore(mockDb);
+
+      (store as any).repository = mockRepository;
+
+      const result = await store.listRecent(10);
+
+      expect(mockRepository.listRecent).toHaveBeenCalledWith(10);
+      expect(result).toEqual(checkpoints);
+    });
+  });
+
+  describe('createDatabaseCheckpointStore', () => {
+    it('returns a DatabaseCheckpointStore instance', async () => {
+      const { createDatabaseCheckpointStore, DatabaseCheckpointStore } =
+        await import('./database-checkpoint-store');
+      const mockDb = { collection: vi.fn() } as any;
+
+      const store = createDatabaseCheckpointStore(mockDb);
+
+      expect(store).toBeInstanceOf(DatabaseCheckpointStore);
+    });
+  });
+});
