@@ -8,3 +8,4 @@ export * from './dom';
 export * from './tokens';
 export * from './comparison';
 export * from './extractor';
+export * from './database';
