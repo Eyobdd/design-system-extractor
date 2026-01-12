@@ -1,2 +1,9 @@
 // Checkpoint module - extraction progress tracking
-export {};
+export { CheckpointStore } from './store';
+export type {
+  ExtractionCheckpoint,
+  ExtractionStatus,
+  ComponentIdentification,
+  ComponentComparison,
+  SerializedCheckpoint,
+} from './types';
