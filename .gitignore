@@ -54,5 +54,8 @@ temp
 # Puppeteer
 .cache/puppeteer
 
+# Extraction checkpoints (local state)
+.checkpoints
+
 # Misc
 *.tgz
