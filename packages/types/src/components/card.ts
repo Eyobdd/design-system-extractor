@@ -6,6 +6,8 @@ import type {
   SpacingKey,
 } from '../primitives/index';
 
+export type CardVariant = 'default' | 'elevated' | 'bordered';
+
 export interface CardVariantSpec {
   surface: SurfaceColorKey;
   border: BorderColorKey | null;
