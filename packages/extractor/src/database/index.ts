@@ -19,3 +19,9 @@ export {
   type DatabaseConfig,
   type HealthCheckResult,
 } from './types';
+
+export {
+  MongoCheckpointRepository,
+  createCheckpointRepository,
+  type CheckpointRepository,
+} from './checkpoint-repository';
