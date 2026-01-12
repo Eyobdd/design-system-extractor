@@ -1,2 +1,2 @@
 // Comparison module - visual similarity scoring
-export {};
+export { calculateSSIM, isSSIMPass, type SSIMResult, type SSIMOptions } from './ssim';
