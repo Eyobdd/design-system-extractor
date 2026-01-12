@@ -519,9 +519,113 @@ Create @extracted/types package structure
 
 ---
 
-## Phase 6: Extractor Package — Comparison
+## Phase 6: Database Integration with MongoDB Atlas
 
-### CL-6.1: Implement SSIM Comparison
+This phase implements persistent storage using MongoDB Atlas, replacing the file-based `.checkpoints/` system. Images are stored using MongoDB GridFS for scalability and multi-server support.
+
+### CL-6.1: Setup MongoDB Connection
+
+- [ ] Install `mongodb` package in `@extracted/extractor`
+- [ ] Create `packages/extractor/src/database/connection.ts`:
+  - Connection pooling with singleton pattern
+  - Environment variable configuration (`MONGODB_URI`)
+  - Graceful connection handling
+- [ ] Create `packages/extractor/src/database/types.ts`:
+  - Database document types
+  - Collection name constants
+- [ ] Add connection health check function
+- [ ] Add tests with mocked MongoDB client
+
+**Commit**: `Setup MongoDB Atlas connection`
+
+---
+
+### CL-6.2: Implement Checkpoint Repository
+
+- [ ] Create `packages/extractor/src/database/checkpoint-repository.ts`:
+  ```typescript
+  interface CheckpointRepository {
+    create(checkpoint: ExtractionCheckpoint): Promise<string>;
+    findById(id: string): Promise<ExtractionCheckpoint | null>;
+    update(id: string, partial: Partial<ExtractionCheckpoint>): Promise<void>;
+    delete(id: string): Promise<void>;
+    listByStatus(status: ExtractionStatus): Promise<ExtractionCheckpoint[]>;
+    listRecent(limit: number): Promise<ExtractionCheckpoint[]>;
+  }
+  ```
+- [ ] Implement MongoDB-backed repository
+- [ ] Add indexes for common queries (id, status, createdAt)
+- [ ] Add tests with mocked repository
+
+**Commit**: `Implement checkpoint repository with MongoDB`
+
+---
+
+### CL-6.3: Implement Image Storage with GridFS
+
+- [ ] Create `packages/extractor/src/database/image-storage.ts`:
+  ```typescript
+  interface ImageStorage {
+    upload(buffer: Buffer, filename: string, metadata?: object): Promise<string>;
+    download(id: string): Promise<Buffer>;
+    delete(id: string): Promise<void>;
+    getMetadata(id: string): Promise<ImageMetadata | null>;
+  }
+  ```
+- [ ] Use MongoDB GridFS for storing:
+  - Viewport screenshots
+  - Full-page screenshots
+  - Component comparison images
+- [ ] Add content-type detection
+- [ ] Add tests with mocked GridFS
+
+**Commit**: `Implement image storage with MongoDB GridFS`
+
+---
+
+### CL-6.4: Migrate CheckpointStore to Database
+
+- [ ] Create `packages/extractor/src/database/database-checkpoint-store.ts`:
+  - Implement same interface as file-based `CheckpointStore`
+  - Use `CheckpointRepository` for metadata
+  - Use `ImageStorage` for screenshots
+- [ ] Add factory function to select storage backend:
+  ```typescript
+  function createCheckpointStore(config: StoreConfig): CheckpointStore {
+    if (config.mongodb) {
+      return new DatabaseCheckpointStore(config.mongodb);
+    }
+    return new FileCheckpointStore(config.baseDir);
+  }
+  ```
+- [ ] Update `Extractor` class to use factory
+- [ ] Add tests for database-backed store
+
+**Commit**: `Migrate checkpoint storage to MongoDB`
+
+---
+
+### CL-6.5: Add Database Configuration and Environment
+
+- [ ] Create `.env.example` update with:
+  ```
+  MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/design-extractor
+  STORAGE_BACKEND=mongodb  # or 'file' for local development
+  ```
+- [ ] Update `packages/extractor/src/database/index.ts` with exports
+- [ ] Add connection validation on startup
+- [ ] Add graceful shutdown handling
+- [ ] Update README with MongoDB Atlas setup instructions
+
+**Commit**: `Add database configuration and documentation`
+
+**🛑 CHECKPOINT**: Database integration complete. Checkpoints and images persist in MongoDB Atlas.
+
+---
+
+## Phase 7: Extractor Package — Comparison
+
+### CL-7.1: Implement SSIM Comparison
 
 - [ ] Install `pixelmatch` and `pngjs`
 - [ ] Create `packages/extractor/src/comparison/ssim.ts`:
@@ -532,7 +636,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-6.2: Implement Color Histogram Comparison
+### CL-7.2: Implement Color Histogram Comparison
 
 - [ ] Create `packages/extractor/src/comparison/color.ts`:
   - Extract color histogram from images
@@ -543,7 +647,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-6.3: Implement Combined Comparison
+### CL-7.3: Implement Combined Comparison
 
 - [ ] Create `packages/extractor/src/comparison/compare.ts`:
   - Combine SSIM (60%) + color (40%)
@@ -555,7 +659,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-6.4: Implement LLM Refinement Suggestions
+### CL-7.4: Implement LLM Refinement Suggestions
 
 - [ ] Create `packages/extractor/src/comparison/refine.ts`:
   - Send original + generated to LLM
@@ -568,9 +672,9 @@ Create @extracted/types package structure
 
 ---
 
-## Phase 7: Next.js Web Application
+## Phase 8: Next.js Web Application
 
-### CL-7.1: Create Next.js App
+### CL-8.1: Create Next.js App
 
 - [ ] Create `apps/web/` with Next.js 14 (App Router)
 - [ ] Configure TypeScript, ESLint
@@ -581,7 +685,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-7.2: Implement URL Input Page
+### CL-8.2: Implement URL Input Page
 
 - [ ] Create `apps/web/app/page.tsx`:
   - Large centered text input
@@ -593,7 +697,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-7.3: Implement Extraction API Route
+### CL-8.3: Implement Extraction API Route
 
 - [ ] Create `apps/web/app/api/extract/start/route.ts`:
   - Accept URL
@@ -607,7 +711,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-7.4: Implement Progress Display
+### CL-8.4: Implement Progress Display
 
 - [ ] Create `apps/web/app/extract/[id]/page.tsx`:
   - Fetch checkpoint status
@@ -619,7 +723,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-7.5: Implement Component Comparison UI
+### CL-8.5: Implement Component Comparison UI
 
 - [ ] Add component comparison section to extract page:
   - Original screenshot (left)
@@ -631,7 +735,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-7.6: Implement Feedback API
+### CL-8.6: Implement Feedback API
 
 - [ ] Create `apps/web/app/api/extract/feedback/route.ts`:
   - Accept component ID + accept/reject
@@ -642,7 +746,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-7.7: Implement Design System View
+### CL-8.7: Implement Design System View
 
 - [ ] Create `apps/web/app/design-system/[id]/page.tsx`:
   - Display extracted colors
@@ -655,7 +759,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-7.8: Implement Export API
+### CL-8.8: Implement Export API
 
 - [ ] Create `apps/web/app/api/export/route.ts`:
   - Generate TypeScript package
@@ -668,9 +772,9 @@ Create @extracted/types package structure
 
 ---
 
-## Phase 8: Polish and Deploy
+## Phase 9: Polish and Deploy
 
-### CL-8.1: Add Error Handling
+### CL-9.1: Add Error Handling
 
 - [ ] Add error boundaries
 - [ ] Add retry logic with exponential backoff
@@ -680,7 +784,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-8.2: Add Health Check Endpoint
+### CL-9.2: Add Health Check Endpoint
 
 - [ ] Create `apps/web/app/api/health/route.ts`
 - [ ] Return status, timestamp, version
@@ -689,7 +793,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-8.3: Deploy to Render
+### CL-9.3: Deploy to Render
 
 - [ ] Push all code to GitHub
 - [ ] Connect Render to repository
@@ -701,7 +805,7 @@ Create @extracted/types package structure
 
 ---
 
-### CL-8.4: Final Documentation
+### CL-9.4: Final Documentation
 
 - [ ] Update README with final instructions
 - [ ] Add inline code comments where helpful
@@ -719,7 +823,7 @@ The extraction pipeline uses a checkpoint system to:
 
 1. **Resume on failure** — If any step fails, restart from last checkpoint
 2. **Show progress** — User sees real-time progress (0-100%)
-3. **Persist state** — Stored as JSON files in `.checkpoints/` directory
+3. **Persist state** — Stored in MongoDB Atlas (production) or JSON files in `.checkpoints/` (local development)
 
 ### Checkpoint Stages
 
