@@ -392,6 +392,52 @@ describe('Extract API', () => {
   });
 
   describe('Extraction Logic (extraction.ts)', () => {
+    describe('getCheckpointStore', () => {
+      it('returns a CheckpointStore instance', async () => {
+        const { getCheckpointStore, setCheckpointStore } = await import('./extraction');
+        setCheckpointStore(
+          null as unknown as InstanceType<typeof import('@extracted/extractor').CheckpointStore>
+        );
+
+        const store = getCheckpointStore();
+
+        expect(store).toBeDefined();
+        expect(typeof store.load).toBe('function');
+        expect(typeof store.save).toBe('function');
+      });
+
+      it('returns the same instance on subsequent calls (singleton)', async () => {
+        const { getCheckpointStore, setCheckpointStore } = await import('./extraction');
+        setCheckpointStore(
+          null as unknown as InstanceType<typeof import('@extracted/extractor').CheckpointStore>
+        );
+
+        const store1 = getCheckpointStore();
+        const store2 = getCheckpointStore();
+
+        expect(store1).toBe(store2);
+      });
+    });
+
+    describe('setCheckpointStore', () => {
+      it('allows setting a custom store instance', async () => {
+        const { getCheckpointStore, setCheckpointStore } = await import('./extraction');
+
+        const customStore = {
+          load: vi.fn(),
+          save: vi.fn(),
+          update: vi.fn(),
+          list: vi.fn(),
+          delete: vi.fn(),
+        } as unknown as InstanceType<typeof import('@extracted/extractor').CheckpointStore>;
+
+        setCheckpointStore(customStore);
+        const result = getCheckpointStore();
+
+        expect(result).toBe(customStore);
+      });
+    });
+
     describe('simulateDelay', () => {
       it('resolves after specified delay', async () => {
         vi.useFakeTimers();

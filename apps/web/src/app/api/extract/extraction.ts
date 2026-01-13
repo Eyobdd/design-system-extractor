@@ -1,5 +1,18 @@
 import { CheckpointStore } from '@extracted/extractor';
 
+let checkpointStoreInstance: CheckpointStore | null = null;
+
+export function getCheckpointStore(): CheckpointStore {
+  if (!checkpointStoreInstance) {
+    checkpointStoreInstance = new CheckpointStore();
+  }
+  return checkpointStoreInstance;
+}
+
+export function setCheckpointStore(store: CheckpointStore): void {
+  checkpointStoreInstance = store;
+}
+
 export function simulateDelay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
