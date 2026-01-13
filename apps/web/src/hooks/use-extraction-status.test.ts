@@ -97,7 +97,10 @@ describe('useExtractionStatus', () => {
     });
 
     it('clears error on successful fetch after error', async () => {
-      mockFetchError('First error');
+      vi.mocked(global.fetch).mockResolvedValue({
+        ok: false,
+        json: () => Promise.resolve({ error: 'First error' }),
+      } as Response);
 
       const { result } = renderHook(() =>
         useExtractionStatus('ext_123', { enabled: true, pollingInterval: 50 })
