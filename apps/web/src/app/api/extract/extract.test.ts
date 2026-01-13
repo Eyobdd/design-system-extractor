@@ -43,10 +43,10 @@ describe('Extract API', () => {
     vi.resetModules();
   });
 
-  describe('Helper Functions (start/route.ts)', () => {
+  describe('Helper Functions (utils.ts)', () => {
     describe('generateCheckpointId', () => {
       it('generates ID with ext_ prefix', async () => {
-        const { generateCheckpointId } = await import('./start/route');
+        const { generateCheckpointId } = await import('./utils');
 
         const id = generateCheckpointId();
 
@@ -54,7 +54,7 @@ describe('Extract API', () => {
       });
 
       it('generates unique IDs', async () => {
-        const { generateCheckpointId } = await import('./start/route');
+        const { generateCheckpointId } = await import('./utils');
 
         const id1 = generateCheckpointId();
         const id2 = generateCheckpointId();
@@ -63,7 +63,7 @@ describe('Extract API', () => {
       });
 
       it('includes timestamp component', async () => {
-        const { generateCheckpointId } = await import('./start/route');
+        const { generateCheckpointId } = await import('./utils');
 
         const before = Date.now();
         const id = generateCheckpointId();
@@ -79,43 +79,43 @@ describe('Extract API', () => {
 
     describe('isValidUrl', () => {
       it('returns true for valid http URL', async () => {
-        const { isValidUrl } = await import('./start/route');
+        const { isValidUrl } = await import('./utils');
 
         expect(isValidUrl('http://example.com')).toBe(true);
       });
 
       it('returns true for valid https URL', async () => {
-        const { isValidUrl } = await import('./start/route');
+        const { isValidUrl } = await import('./utils');
 
         expect(isValidUrl('https://example.com')).toBe(true);
       });
 
       it('returns true for URL with path and query', async () => {
-        const { isValidUrl } = await import('./start/route');
+        const { isValidUrl } = await import('./utils');
 
         expect(isValidUrl('https://example.com/path?query=value')).toBe(true);
       });
 
       it('returns false for ftp URL', async () => {
-        const { isValidUrl } = await import('./start/route');
+        const { isValidUrl } = await import('./utils');
 
         expect(isValidUrl('ftp://files.example.com')).toBe(false);
       });
 
       it('returns false for invalid URL', async () => {
-        const { isValidUrl } = await import('./start/route');
+        const { isValidUrl } = await import('./utils');
 
         expect(isValidUrl('not-a-url')).toBe(false);
       });
 
       it('returns false for empty string', async () => {
-        const { isValidUrl } = await import('./start/route');
+        const { isValidUrl } = await import('./utils');
 
         expect(isValidUrl('')).toBe(false);
       });
 
       it('returns false for javascript protocol', async () => {
-        const { isValidUrl } = await import('./start/route');
+        const { isValidUrl } = await import('./utils');
 
         expect(isValidUrl('javascript:alert(1)')).toBe(false);
       });
