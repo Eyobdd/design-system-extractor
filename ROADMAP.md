@@ -389,9 +389,9 @@ Create @extracted/types package structure
 
 ### CL-5.1: Create Extractor Package Structure
 
-- [ ] Create `packages/extractor/package.json`
-- [ ] Install: `puppeteer`, `sharp`, `@langchain/google-genai`
-- [ ] Create directory structure:
+- [x] Create `packages/extractor/package.json`
+- [x] Install: `puppeteer`, `sharp`, `@langchain/google-genai`
+- [x] Create directory structure:
   ```
   src/
   ├── screenshot/
@@ -409,7 +409,7 @@ Create @extracted/types package structure
 
 ### CL-5.2: Implement Checkpointing System
 
-- [ ] Create `packages/extractor/src/checkpoint/types.ts`:
+- [x] Create `packages/extractor/src/checkpoint/types.ts`:
   ```typescript
   export interface ExtractionCheckpoint {
     id: string;
@@ -432,7 +432,7 @@ Create @extracted/types package structure
     error?: string;
   }
   ```
-- [ ] Create `packages/extractor/src/checkpoint/store.ts`:
+- [x] Create `packages/extractor/src/checkpoint/store.ts`:
   ```typescript
   export class CheckpointStore {
     async save(checkpoint: ExtractionCheckpoint): Promise<void>;
@@ -440,7 +440,7 @@ Create @extracted/types package structure
     async update(id: string, partial: Partial<ExtractionCheckpoint>): Promise<void>;
   }
   ```
-- [ ] Implement file-based storage (JSON files in `.checkpoints/`)
+- [x] Implement file-based storage (JSON files in `.checkpoints/`)
 
 **Commit**: `Implement extraction checkpointing system`
 
@@ -448,13 +448,13 @@ Create @extracted/types package structure
 
 ### CL-5.3: Implement Screenshot Capture
 
-- [ ] Create `packages/extractor/src/screenshot/capture.ts`:
+- [x] Create `packages/extractor/src/screenshot/capture.ts`:
   - Launch Puppeteer headless
   - Navigate to URL
   - Wait for network idle
   - Capture viewport screenshot
   - Update checkpoint to 'screenshot' status
-- [ ] Create `packages/extractor/src/screenshot/stitch.ts`:
+- [x] Create `packages/extractor/src/screenshot/stitch.ts`:
   - Scroll and capture full page
   - Stitch into single image
 
@@ -464,7 +464,7 @@ Create @extracted/types package structure
 
 ### CL-5.4: Add Screenshot Tests
 
-- [ ] Create `packages/extractor/__tests__/screenshot.test.ts`:
+- [x] Create `packages/extractor/__tests__/screenshot.test.ts`:
   - Test: Captures screenshot of valid URL
   - Test: Handles invalid URL
   - Test: Updates checkpoint on success
@@ -476,10 +476,10 @@ Create @extracted/types package structure
 
 ### CL-5.5: Implement Vision Component Identification
 
-- [ ] Create `packages/extractor/src/vision/prompts.ts`:
+- [x] Create `packages/extractor/src/vision/prompts.ts`:
   - System prompt for component identification
   - Output JSON schema
-- [ ] Create `packages/extractor/src/vision/identify.ts`:
+- [x] Create `packages/extractor/src/vision/identify.ts`:
   - Initialize Gemini 2.5 Flash via LangChain
   - Send screenshot
   - Parse response to component list with bounding boxes
@@ -491,10 +491,10 @@ Create @extracted/types package structure
 
 ### CL-5.6: Implement DOM Style Extraction (including Pseudo-classes)
 
-- [ ] Create `packages/extractor/src/dom/properties.ts`:
+- [x] Create `packages/extractor/src/dom/properties.ts`:
   - `RELEVANT_PROPERTIES` object with kebab-case property names
   - Property groups: core, layout, sizing, interaction, etc.
-- [ ] Create `packages/extractor/src/dom/extract.ts`:
+- [x] Create `packages/extractor/src/dom/extract.ts`:
   - Execute in-page JavaScript
   - Use `getPropertyValue()` with kebab-case
   - Support extracting pseudo-classes (`:hover`, `:active`, `:focus`) by triggering states
@@ -508,10 +508,10 @@ Create @extracted/types package structure
 
 ### CL-5.7: Implement Dry Run and Local Verification
 
-- [ ] Add a `dryRun` flag to the extractor
-- [ ] Implement local HTML file extraction (for testing without live URLs)
-- [ ] Add regression test suite using local fixtures
-- [ ] Update `package.json` with extraction test scripts
+- [x] Add a `dryRun` flag to the extractor
+- [x] Implement local HTML file extraction (for testing without live URLs)
+- [x] Add regression test suite using local fixtures
+- [x] Update `package.json` with extraction test scripts
 
 **Commit**: `Add dry run mode and local extraction verification`
 
@@ -627,8 +627,8 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-7.1: Implement SSIM Comparison
 
-- [ ] Install `pixelmatch` and `pngjs`
-- [ ] Create `packages/extractor/src/comparison/ssim.ts`:
+- [x] Install `pixelmatch` and `pngjs`
+- [x] Create `packages/extractor/src/comparison/ssim.ts`:
   - Calculate structural similarity
   - Return score 0-1
 
@@ -638,7 +638,7 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-7.2: Implement Color Histogram Comparison
 
-- [ ] Create `packages/extractor/src/comparison/color.ts`:
+- [x] Create `packages/extractor/src/comparison/color.ts`:
   - Extract color histogram from images
   - Compare histograms
   - Return score 0-1
@@ -649,11 +649,11 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-7.3: Implement Combined Comparison
 
-- [ ] Create `packages/extractor/src/comparison/compare.ts`:
+- [x] Create `packages/extractor/src/comparison/compare.ts`:
   - Combine SSIM (60%) + color (40%)
   - Return pass/fail based on 95% threshold
   - Update checkpoint to 'comparison' status
-- [ ] Add tests
+- [x] Add tests
 
 **Commit**: `Implement combined component comparison`
 
@@ -661,7 +661,7 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-7.4: Implement LLM Refinement Suggestions
 
-- [ ] Create `packages/extractor/src/comparison/refine.ts`:
+- [x] Create `packages/extractor/src/comparison/refine.ts`:
   - Send original + generated to LLM
   - Get specific refinement suggestions
   - Return actionable feedback
@@ -676,10 +676,10 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-8.1: Create Next.js App
 
-- [ ] Create `apps/web/` with Next.js 14 (App Router)
-- [ ] Configure TypeScript, ESLint
-- [ ] Install Tailwind CSS
-- [ ] Create basic layout
+- [x] Create `apps/web/` with Next.js 14 (App Router)
+- [x] Configure TypeScript, ESLint
+- [x] Install Tailwind CSS
+- [x] Create basic layout
 
 **Commit**: `Create Next.js web application`
 
@@ -687,7 +687,7 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-8.2: Implement URL Input Page
 
-- [ ] Create `apps/web/app/page.tsx`:
+- [x] Create `apps/web/app/page.tsx`:
   - Large centered text input
   - URL validation
   - "Extract Design System" button
@@ -699,12 +699,12 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-8.3: Implement Extraction API Route
 
-- [ ] Create `apps/web/app/api/extract/start/route.ts`:
+- [x] Create `apps/web/app/api/extract/start/route.ts`:
   - Accept URL
   - Create checkpoint
   - Start extraction (async)
   - Return checkpoint ID
-- [ ] Create `apps/web/app/api/extract/status/[id]/route.ts`:
+- [x] Create `apps/web/app/api/extract/status/[id]/route.ts`:
   - Return checkpoint status and progress
 
 **Commit**: `Implement extraction API routes`
@@ -713,7 +713,7 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-8.4: Implement Progress Display
 
-- [ ] Create `apps/web/app/extract/[id]/page.tsx`:
+- [x] Create `apps/web/app/extract/[id]/page.tsx`:
   - Fetch checkpoint status
   - Display progress bar
   - Show current stage
@@ -725,7 +725,7 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-8.5: Implement Component Comparison UI
 
-- [ ] Add component comparison section to extract page:
+- [x] Add component comparison section to extract page:
   - Original screenshot (left)
   - Generated preview (right)
   - Match percentage
@@ -737,10 +737,10 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-8.6: Implement Feedback API
 
-- [ ] Create `apps/web/app/api/extract/feedback/route.ts`:
+- [x] Create `apps/web/app/api/feedback/route.ts`:
   - Accept component ID + accept/reject
   - Update checkpoint
-  - Trigger re-extraction if rejected
+  - Store feedback in memory
 
 **Commit**: `Implement feedback API route`
 
@@ -748,7 +748,7 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-8.7: Implement Design System View
 
-- [ ] Create `apps/web/app/design-system/[id]/page.tsx`:
+- [x] Create `apps/web/app/design-system/[id]/page.tsx`:
   - Display extracted colors
   - Display typography scale
   - Display spacing scale
@@ -761,10 +761,9 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-8.8: Implement Export API
 
-- [ ] Create `apps/web/app/api/export/route.ts`:
-  - Generate TypeScript package
-  - Create package.json, index.ts, types
-  - Return download URL
+- [x] Create `apps/web/app/api/export/route.ts`:
+  - Export tokens as JSON, CSS, SCSS, or Tailwind config
+  - Download as file
 
 **Commit**: `Implement design system export`
 
@@ -772,48 +771,516 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ---
 
-## Phase 9: Polish and Deploy
+## Phase 10: Connect Web App to Real Extractor Pipeline
 
-### CL-9.1: Add Error Handling
+> **Goal**: Replace stub extraction logic with actual Puppeteer-based extraction. The web app currently uses hardcoded values — this phase wires it to the real `Extractor` class.
 
-- [ ] Add error boundaries
-- [ ] Add retry logic with exponential backoff
-- [ ] Add user-friendly error messages
+### CL-10.1: Configure Puppeteer for Server-Side Execution
+
+- [ ] Add `@sparticuz/chromium` for serverless Chromium support
+- [ ] Create `apps/web/src/lib/browser.ts`:
+  - Configure Puppeteer to use bundled Chromium in production
+  - Use local Chrome in development
+- [ ] Update `apps/web/next.config.js` for Puppeteer compatibility
+- [ ] Add environment detection (local vs Render)
+
+**Commit**: `Configure Puppeteer for server-side execution`
+
+---
+
+### CL-10.2: Wire Extraction API to Real Extractor
+
+- [ ] Update `apps/web/src/app/api/extract/extraction.ts`:
+  - Import and use `Extractor` from `@extracted/extractor`
+  - Remove `simulateDelay` stubs
+  - Pass real URL to extractor
+- [ ] Handle extraction events for progress updates
+- [ ] Store real screenshots and extracted tokens in checkpoint
+
+**Commit**: `Wire extraction API to real extractor pipeline`
+
+---
+
+### CL-10.3: Add URL Normalization
+
+- [ ] Create `apps/web/src/lib/url-utils.ts`:
+  ```typescript
+  export function normalizeUrl(input: string): string {
+    // "example.com" → "https://example.com"
+    // "www.example.com" → "https://www.example.com"
+    // "http://example.com" → "http://example.com" (preserve)
+  }
+  ```
+- [ ] Update URL input component to auto-normalize
+- [ ] Update validation to accept simplified URLs
+- [ ] Add tests for URL normalization
+
+**Commit**: `Add URL normalization for simplified input`
+
+---
+
+### CL-10.4: Add Extraction Error Recovery
+
+- [ ] Implement retry logic for transient failures
+- [ ] Add timeout handling for slow pages
+- [ ] Surface meaningful error messages to UI
+- [ ] Add extraction logs for debugging
+
+**Commit**: `Add extraction error recovery and logging`
+
+**🛑 CHECKPOINT**: Web app performs real extractions with Puppeteer.
+
+---
+
+## Phase 11: Visual Comparison UI with Primitives + Variants
+
+> **Goal**: Replace token-only view with side-by-side comparison showing original component (via iframe) next to our rendered primitive variant.
+
+### CL-11.1: Define Shared Types for Review System
+
+- [ ] Create `packages/types/src/primitives/component-type.ts`:
+  ```typescript
+  // Source of truth for primitive component types
+  export type PrimitiveComponentType = 'button' | 'card' | 'input' | 'text';
+  export const PRIMITIVE_COMPONENT_TYPES: readonly PrimitiveComponentType[] = [
+    'button',
+    'card',
+    'input',
+    'text',
+  ] as const;
+  ```
+- [ ] Create `packages/types/src/geometry/bounding-box.ts`:
+  ```typescript
+  export interface BoundingBox {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }
+  ```
+- [ ] Create `packages/types/src/review/variant-review.ts`:
+
+  ```typescript
+  import type { PrimitiveComponentType } from '../primitives/component-type';
+  import type { BoundingBox } from '../geometry/bounding-box';
+  import type {
+    ButtonVariantSpec,
+    CardVariantSpec,
+    InputVariantSpec,
+    TextVariantSpec,
+  } from '../components';
+
+  // 'dne' = "does not exist" (detected component that isn't actually a variant)
+  export type VariantReviewStatus = 'pending' | 'accepted' | 'failed' | 'dne';
+
+  export interface VariantReview {
+    componentType: PrimitiveComponentType;
+    variantId: string;
+    variantName: string;
+    status: VariantReviewStatus;
+    extractedSpec: ButtonVariantSpec | CardVariantSpec | InputVariantSpec | TextVariantSpec;
+    originalSelector: string;
+    originalBoundingBox: BoundingBox;
+    matchScore?: number;
+    reviewedAt?: Date;
+    // User feedback passed to LLM on retry extraction
+    reviewComment?: string;
+  }
+  ```
+
+- [ ] Update `ComponentIdentification` to use `BoundingBox` type
+- [ ] Add to checkpoint type: `variantReviews?: VariantReview[]`
+- [ ] Export all new types from `@extracted/types`
+
+**Commit**: `Define shared types for review system`
+
+---
+
+### CL-11.2: Create Iframe Component Preview
+
+- [ ] Create `apps/web/src/components/original-preview.tsx`:
+  - Render iframe pointing to source URL
+  - Scroll/position to show specific component
+  - Add overlay mask to highlight component area
+- [ ] Handle cross-origin restrictions gracefully
+- [ ] Fallback to screenshot crop if iframe blocked
+
+**Commit**: `Create iframe-based original component preview`
+
+---
+
+### CL-11.3: Create Primitive Variant Renderer
+
+- [ ] Create `apps/web/src/components/variant-preview.tsx`:
+  - Import primitives from `@extracted/primitives`
+  - Dynamically apply extracted variant spec as inline styles
+  - Render actual `<Button>`, `<Card>`, `<Input>`, `<Text>` components
+- [ ] Create style injection utility for variant specs
+- [ ] Add visual match percentage overlay
+
+**Commit**: `Create primitive variant renderer`
+
+---
+
+### CL-11.4: Build Variant Comparison Accordion
+
+- [ ] Create `apps/web/src/components/variant-accordion.tsx`:
+  - Group variants by component type (Button, Card, Input, Text)
+  - Each accordion item shows all variants of that type
+  - Side-by-side: Original (iframe) | Extracted (primitive)
+  - Status badge: pending/accepted/failed/hallucinated
+- [ ] Create `apps/web/src/components/variant-review-card.tsx`:
+  - Individual variant comparison
+  - Accept / Reject / Mark as Hallucinated buttons
+  - Optional comment field
+
+**Commit**: `Build variant comparison accordion UI`
+
+---
+
+### CL-11.5: Update Extract Page with Variant Comparison
+
+- [ ] Replace token-only display with variant accordion
+- [ ] Show extraction progress → variant review flow
+- [ ] Add "Review All Variants" summary section
+- [ ] Add "Proceed to Export" button (only when all reviewed)
+
+**Commit**: `Update extract page with variant comparison UI`
+
+**🛑 CHECKPOINT**: Users can visually compare original vs extracted variants.
+
+---
+
+## Phase 12: Variant Retry System
+
+> **Goal**: Allow users to retry extraction for failed variants while keeping approved ones.
+
+### CL-12.1: Implement Variant Feedback API
+
+- [ ] Update `apps/web/src/app/api/feedback/route.ts`:
+  - Accept `status: 'accepted' | 'failed' | 'hallucinated'`
+  - Accept optional `comment` field
+  - Update checkpoint's `variantReviews` array
+- [ ] Add GET endpoint to retrieve variant statuses
+
+**Commit**: `Implement variant feedback API with status types`
+
+---
+
+### CL-12.2: Implement Batch Retry Extraction
+
+- [ ] Create `apps/web/src/app/api/extract/retry/route.ts`:
+  - Accept checkpoint ID + list of failed variant IDs
+  - Re-run extraction ONLY for failed variants
+  - Preserve approved variants
+  - Update checkpoint with new results
+- [ ] Add retry logic to `Extractor` class:
+  ```typescript
+  async retryVariants(
+    checkpointId: string,
+    variantIds: string[],
+    feedback?: Map<string, string>  // variantId → reviewComment for LLM context
+  ): Promise<void>
+  ```
+- [ ] Update LLM prompt to include user feedback on what failed
+
+**Commit**: `Implement batch retry extraction for failed variants`
+
+---
+
+### CL-12.3: Add Retry UI Flow
+
+- [ ] Add "Retry Failed Variants" button to extract page
+- [ ] Show retry progress indicator
+- [ ] Update variant statuses after retry completes
+- [ ] Allow multiple retry cycles
+
+**Commit**: `Add retry UI flow for failed variants`
+
+**🛑 CHECKPOINT**: Users can iteratively refine extraction results.
+
+---
+
+## Phase 13: Export Package Generator
+
+> **Goal**: Generate a complete TypeScript package with typed primitives and variants based on extraction results.
+
+### CL-13.1: Define Export Package Structure
+
+- [ ] Create `packages/extractor/src/export/types.ts`:
+
+  ```typescript
+  export interface ExportPackageConfig {
+    name: string;
+    extractedTokens: ExtractedTokens;
+    approvedVariants: VariantReview[];
+    includeDefaults: boolean;
+  }
+
+  export interface GeneratedPackage {
+    files: Map<string, string>;
+    packageJson: object;
+  }
+  ```
+
+**Commit**: `Define export package structure types`
+
+---
+
+### CL-13.2: Implement Token Type Generator
+
+- [ ] Create `packages/extractor/src/export/generate-tokens.ts`:
+  - Generate `tokens/colors.ts` with extracted color keys
+  - Generate `tokens/spacing.ts` with type-narrowed spacing keys
+  - Generate `tokens/typography.ts` with font specs
+  - Generate `tokens/easing.ts` for transitions
+  - Fallback to sensible defaults for unextracted token types
+  - Use `as const satisfies` pattern for type safety:
+
+  ```typescript
+  // Generated example:
+  export type SpacingKey = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  export const spacing = {
+    xs: '4px',
+    sm: '8px',
+    md: '16px',
+    lg: '24px',
+    xl: '32px',
+  } as const satisfies Record<SpacingKey, string>;
+
+  export type EasingKey = 'default' | 'in' | 'out' | 'inOut';
+  export const easing = {
+    default: 'ease',
+    in: 'ease-in',
+    out: 'ease-out',
+    inOut: 'ease-in-out',
+  } as const satisfies Record<EasingKey, string>;
+  ```
+
+**Commit**: `Implement token type generator with satisfies pattern`
+
+---
+
+### CL-13.3: Implement Variant Generator
+
+- [ ] Create `packages/extractor/src/export/generate-variants.ts`:
+  - Generate `variants/button.ts` with approved button variants
+  - Generate `variants/card.ts`, `variants/input.ts`, `variants/text.ts`
+  - Use `as const satisfies` for type safety
+  - Include interactive states (hover, active, focus) when extracted
+
+  ```typescript
+  // Generated example:
+  import type { ButtonVariantSpec } from './types';
+  import type { ColorKey, SpacingKey, EasingKey } from '../tokens';
+
+  export const buttonVariants = {
+    primary: {
+      surface: 'primary',
+      text: 'white',
+      paddingX: 'md',
+      paddingY: 'sm',
+      // Interactive states
+      states: {
+        hover: { surface: 'primary-dark' },
+        active: { surface: 'primary-darker' },
+        focus: { outline: '2px solid primary' },
+      },
+      transition: {
+        property: 'background-color',
+        duration: '150ms',
+        easing: 'default',
+      },
+    },
+    secondary: {
+      /* ... */
+    },
+  } as const satisfies Record<string, ButtonVariantSpec>;
+
+  // Type for variant keys (for props)
+  export type ButtonVariantKey = keyof typeof buttonVariants;
+  ```
+
+- [ ] Add clear comments showing how to add new variants:
+  ```typescript
+  // To add a new variant, add an entry to buttonVariants:
+  // myCustom: { surface: 'custom-color', text: 'white', ... }
+  ```
+
+**Commit**: `Implement variant generator with interactive states`
+
+---
+
+### CL-13.4: Implement Primitive Wrapper Generator
+
+- [ ] Create `packages/extractor/src/export/generate-primitives.ts`:
+  - Generate typed wrapper components
+  - Import from base `@extracted/primitives`
+  - Accept variant key as string prop, lookup from variants object
+
+  ```typescript
+  // Generated example:
+  import { Button as BaseButton } from '@extracted/primitives';
+  import { buttonVariants, type ButtonVariantKey } from './variants/button';
+
+  export interface ButtonProps extends Omit<BaseButtonProps, 'variant'> {
+    variant: ButtonVariantKey;  // 'primary' | 'secondary' | ...
+  }
+
+  export const Button = ({ variant, ...props }: ButtonProps) => {
+    const variantSpec = buttonVariants[variant];
+    return <BaseButton variant={variantSpec} {...props} />;
+  };
+
+  // To add a new variant:
+  // 1. Add entry to variants/button.ts in buttonVariants object
+  // 2. The ButtonVariantKey type updates automatically
+  // 3. Use: <Button variant="myNewVariant" />
+  ```
+
+- [ ] Generate CSS file for keyframe animations (if any extracted):
+  ```css
+  /* Generated: primitives/button.css */
+  @keyframes button-primary-pulse { ... }
+  .button-hover-primary { ... }
+  ```
+
+**Commit**: `Implement primitive wrapper generator with variant lookup`
+
+---
+
+### CL-13.5: Implement Package Bundler
+
+- [ ] Create `packages/extractor/src/export/bundle.ts`:
+  - Combine all generated files
+  - Generate `package.json` with dependencies
+  - Generate `index.ts` barrel export
+  - Generate `tsconfig.json`
+  - Generate `README.md` with usage instructions
+- [ ] Create ZIP file for download
+
+**Commit**: `Implement package bundler`
+
+---
+
+### CL-13.6: Update Export API
+
+- [ ] Update `apps/web/src/app/api/export/route.ts`:
+  - Add `format: 'package'` option
+  - Generate full TypeScript package
+  - Return as downloadable ZIP
+- [ ] Add export preview showing generated file structure
+
+**Commit**: `Update export API with package generation`
+
+**🛑 CHECKPOINT**: Users can export a complete typed component package.
+
+---
+
+## Phase 14: UX Polish and Production Readiness
+
+> **Goal**: Final polish for production deployment.
+
+### CL-14.1: Improve URL Input UX
+
+- [ ] Auto-focus input on page load
+- [ ] Show normalized URL preview as user types
+- [ ] Add example URLs / recent extractions
+- [ ] Add keyboard shortcut (Enter to submit)
+
+**Commit**: `Improve URL input UX`
+
+---
+
+### CL-14.2: Add Loading States and Animations
+
+- [ ] Add skeleton loaders for comparison cards
+- [ ] Add progress animations during extraction
+- [ ] Add success/error toast notifications
+- [ ] Add smooth transitions between states
+
+**Commit**: `Add loading states and animations`
+
+---
+
+### CL-14.3: Add Extraction History
+
+- [ ] Create `apps/web/src/app/history/page.tsx`:
+  - List recent extractions
+  - Show status, URL, date
+  - Allow resuming incomplete extractions
+- [ ] Store extraction history in localStorage (or DB)
+
+**Commit**: `Add extraction history page`
+
+---
+
+### CL-14.4: Production Deployment Configuration
+
+- [ ] Update `render.yaml` with Puppeteer dependencies
+- [ ] Configure Chrome/Chromium for Render
+- [ ] Set up environment variables
+- [ ] Add health checks for browser availability
+- [ ] Test full extraction flow on Render
+
+**Commit**: `Configure production deployment with Puppeteer`
+
+**🛑 CHECKPOINT**: UX polished and production deployment configured.
+
+---
+
+## Phase 15: Final Polish and Deploy
+
+> **Goal**: Final deployment and documentation. Moved from Phase 9 to ensure core functionality is complete first.
+
+### CL-15.1: Add Error Handling
+
+- [ ] Add error boundaries to React components
+- [ ] Add retry logic with exponential backoff for API calls
+- [ ] Add user-friendly error messages with actionable suggestions
 
 **Commit**: `Add comprehensive error handling`
 
 ---
 
-### CL-9.2: Add Health Check Endpoint
+### CL-15.2: Add Health Check Endpoint
 
 - [ ] Create `apps/web/app/api/health/route.ts`
-- [ ] Return status, timestamp, version
+- [ ] Return status, timestamp, version, browser availability
 
 **Commit**: `Add health check endpoint`
 
 ---
 
-### CL-9.3: Deploy to Render
+### CL-15.3: Deploy to Render
 
 - [ ] Push all code to GitHub
 - [ ] Connect Render to repository
-- [ ] Set `GEMINI_API_KEY` in Render dashboard
+- [ ] Set environment variables (`GEMINI_API_KEY`, `MONGODB_URI`)
+- [ ] Configure Puppeteer/Chromium for Render
 - [ ] Trigger deploy
 - [ ] Verify health check responds
+- [ ] Test full extraction flow end-to-end
 
 **Commit**: N/A (deployment)
 
 ---
 
-### CL-9.4: Final Documentation
+### CL-15.4: Final Documentation
 
-- [ ] Update README with final instructions
+- [ ] Update README with:
+  - Setup instructions
+  - Environment variables
+  - How to run locally
+  - How to deploy
+  - How to extend with new primitives
 - [ ] Add inline code comments where helpful
 - [ ] Verify all links work
+- [ ] Add architecture diagram
 
 **Commit**: `Finalize documentation`
 
-**🛑 FINAL CHECKPOINT**: Application deployed and functional.
+**🛑 FINAL CHECKPOINT**: Production-ready application deployed and functional.
 
 ---
 
@@ -883,5 +1350,9 @@ if (existing?.status === 'screenshot') {
 - [ ] CI passes on main branch
 - [ ] App deploys to Render
 - [ ] Can extract design system from a real website
-- [ ] Can export TypeScript package
+- [ ] Visual comparison UI works (iframe + primitives side-by-side)
+- [ ] Variant review flow works (accept/fail/dne)
+- [ ] Retry extraction works for failed variants
+- [ ] Can export typed TypeScript component package
 - [ ] Checkpointing works (can resume failed extractions)
+- [ ] URL input accepts simplified URLs (no https:// required)
