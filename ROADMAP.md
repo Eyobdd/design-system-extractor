@@ -838,7 +838,7 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-11.1: Define Shared Types for Review System
 
-- [ ] Create `packages/types/src/primitives/component-type.ts`:
+- [x] Create `packages/types/src/primitives/component-type.ts`:
   ```typescript
   // Source of truth for primitive component types
   export type PrimitiveComponentType = 'button' | 'card' | 'input' | 'text';
@@ -849,7 +849,7 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
     'text',
   ] as const;
   ```
-- [ ] Create `packages/types/src/geometry/bounding-box.ts`:
+- [x] Create `packages/types/src/geometry/bounding-box.ts`:
   ```typescript
   export interface BoundingBox {
     x: number;
@@ -858,7 +858,7 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
     height: number;
   }
   ```
-- [ ] Create `packages/types/src/review/variant-review.ts`:
+- [x] Create `packages/types/src/review/variant-review.ts`:
 
   ```typescript
   import type { PrimitiveComponentType } from '../primitives/component-type';
@@ -888,9 +888,9 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
   }
   ```
 
-- [ ] Update `ComponentIdentification` to use `BoundingBox` type
-- [ ] Add to checkpoint type: `variantReviews?: VariantReview[]`
-- [ ] Export all new types from `@extracted/types`
+- [x] Update `ComponentIdentification` to use `BoundingBox` type
+- [x] Add to checkpoint type: `variantReviews?: VariantReview[]`
+- [x] Export all new types from `@extracted/types`
 
 **Commit**: `Define shared types for review system`
 
@@ -898,12 +898,12 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-11.2: Create Iframe Component Preview
 
-- [ ] Create `apps/web/src/components/original-preview.tsx`:
+- [x] Create `apps/web/src/components/original-preview.tsx`:
   - Render iframe pointing to source URL
   - Scroll/position to show specific component
   - Add overlay mask to highlight component area
-- [ ] Handle cross-origin restrictions gracefully
-- [ ] Fallback to screenshot crop if iframe blocked
+- [x] Handle cross-origin restrictions gracefully
+- [x] Fallback to screenshot crop if iframe blocked
 
 **Commit**: `Create iframe-based original component preview`
 
@@ -911,12 +911,12 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-11.3: Create Primitive Variant Renderer
 
-- [ ] Create `apps/web/src/components/variant-preview.tsx`:
+- [x] Create `apps/web/src/components/variant-renderer.tsx`:
   - Import primitives from `@extracted/primitives`
   - Dynamically apply extracted variant spec as inline styles
   - Render actual `<Button>`, `<Card>`, `<Input>`, `<Text>` components
-- [ ] Create style injection utility for variant specs
-- [ ] Add visual match percentage overlay
+- [x] Create style injection utility for variant specs
+- [x] Add visual match percentage overlay
 
 **Commit**: `Create primitive variant renderer`
 
@@ -924,14 +924,14 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-11.4: Build Variant Comparison Accordion
 
-- [ ] Create `apps/web/src/components/variant-accordion.tsx`:
+- [x] Create `apps/web/src/components/variant-comparison.tsx`:
   - Group variants by component type (Button, Card, Input, Text)
   - Each accordion item shows all variants of that type
   - Side-by-side: Original (iframe) | Extracted (primitive)
-  - Status badge: pending/accepted/failed/hallucinated
-- [ ] Create `apps/web/src/components/variant-review-card.tsx`:
+  - Status badge: pending/accepted/failed/dne
+- [x] Create `VariantComparison` component:
   - Individual variant comparison
-  - Accept / Reject / Mark as Hallucinated buttons
+  - Accept / Reject / Mark as DNE buttons
   - Optional comment field
 
 **Commit**: `Build variant comparison accordion UI`
