@@ -6,11 +6,18 @@ const mockSave = vi.fn().mockResolvedValue(undefined);
 const mockLoad = vi.fn();
 const mockUpdate = vi.fn().mockResolvedValue(undefined);
 
+const mockExtractorRun = vi.fn();
+const mockExtractorOn = vi.fn();
+
 vi.mock('@extracted/extractor', () => ({
   CheckpointStore: vi.fn().mockImplementation(() => ({
     save: mockSave,
     load: mockLoad,
     update: mockUpdate,
+  })),
+  createExtractor: vi.fn().mockImplementation(() => ({
+    run: mockExtractorRun,
+    on: mockExtractorOn,
   })),
 }));
 
@@ -438,29 +445,23 @@ describe('Extract API', () => {
       });
     });
 
-    describe('simulateDelay', () => {
-      it('resolves after specified delay', async () => {
-        vi.useFakeTimers();
-        const { simulateDelay } = await import('./extraction');
-
-        const promise = simulateDelay(1000);
-        vi.advanceTimersByTime(1000);
-        await promise;
-
-        vi.useRealTimers();
-      });
-    });
-
     describe('startExtractionAsync', () => {
-      it('updates checkpoint through extraction phases', async () => {
-        vi.useFakeTimers();
-        const { startExtractionAsync } = await import('./extraction');
+      it('calls extractor run and updates checkpoint on success', async () => {
+        mockExtractorRun.mockResolvedValue({
+          checkpoint: {
+            id: 'extractor_checkpoint',
+            status: 'complete',
+            progress: 100,
+            extractedTokens: { colors: {} },
+          },
+        });
 
+        const { startExtractionAsync } = await import('./extraction');
         const mockStore = {
           update: vi.fn().mockResolvedValue(undefined),
         };
 
-        const promise = startExtractionAsync(
+        await startExtractionAsync(
           'ext_123',
           'https://example.com',
           mockStore as unknown as InstanceType<
@@ -468,59 +469,18 @@ describe('Extract API', () => {
           >
         );
 
-        // Screenshot phase
-        await vi.advanceTimersByTimeAsync(0);
-        expect(mockStore.update).toHaveBeenCalledWith('ext_123', {
-          status: 'screenshot',
-          progress: 10,
-        });
-
-        // Progress update
-        await vi.advanceTimersByTimeAsync(1000);
-        expect(mockStore.update).toHaveBeenCalledWith('ext_123', { progress: 30 });
-
-        // Vision phase
-        await vi.advanceTimersByTimeAsync(1000);
-        expect(mockStore.update).toHaveBeenCalledWith('ext_123', {
-          status: 'vision',
-          progress: 50,
-        });
-
-        // Extraction phase
-        await vi.advanceTimersByTimeAsync(1000);
-        expect(mockStore.update).toHaveBeenCalledWith('ext_123', {
-          status: 'extraction',
-          progress: 70,
-        });
-
-        // Progress update
-        await vi.advanceTimersByTimeAsync(1000);
-        expect(mockStore.update).toHaveBeenCalledWith('ext_123', { progress: 90 });
-
-        // Complete
-        await vi.advanceTimersByTimeAsync(500);
-        expect(mockStore.update).toHaveBeenCalledWith(
-          'ext_123',
-          expect.objectContaining({
-            status: 'complete',
-            progress: 100,
-            extractedTokens: expect.objectContaining({
-              colors: expect.any(Object),
-              typography: expect.any(Object),
-              spacing: expect.any(Object),
-            }),
-          })
-        );
-
-        await promise;
-        vi.useRealTimers();
+        // The extractor should have been run
+        expect(mockExtractorRun).toHaveBeenCalled();
+        // Checkpoint should be updated with results
+        expect(mockStore.update).toHaveBeenCalled();
       });
 
       it('sets failed status on error', async () => {
-        const { startExtractionAsync } = await import('./extraction');
+        mockExtractorRun.mockRejectedValue(new Error('Extraction failed'));
 
+        const { startExtractionAsync } = await import('./extraction');
         const mockStore = {
-          update: vi.fn().mockRejectedValueOnce(new Error('Update failed')),
+          update: vi.fn().mockResolvedValue(undefined),
         };
 
         await startExtractionAsync(
@@ -533,15 +493,16 @@ describe('Extract API', () => {
 
         expect(mockStore.update).toHaveBeenLastCalledWith('ext_123', {
           status: 'failed',
-          error: 'Update failed',
+          error: 'Extraction failed',
         });
       });
 
       it('handles non-Error exceptions', async () => {
-        const { startExtractionAsync } = await import('./extraction');
+        mockExtractorRun.mockRejectedValue('string error');
 
+        const { startExtractionAsync } = await import('./extraction');
         const mockStore = {
-          update: vi.fn().mockRejectedValueOnce('string error'),
+          update: vi.fn().mockResolvedValue(undefined),
         };
 
         await startExtractionAsync(

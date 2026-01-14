@@ -3,18 +3,10 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, ArrowRight } from 'lucide-react';
+import { normalizeUrl, isValidUrlInput } from '@/lib/url-utils';
 
 interface UrlInputProps {
   onSubmit?: (url: string) => Promise<void>;
-}
-
-function isValidUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch {
-    return false;
-  }
 }
 
 export function UrlInput({ onSubmit }: UrlInputProps) {
@@ -35,21 +27,24 @@ export function UrlInput({ onSubmit }: UrlInputProps) {
         return;
       }
 
-      if (!isValidUrl(trimmedUrl)) {
-        setError('Please enter a valid URL (e.g., https://example.com)');
+      if (!isValidUrlInput(trimmedUrl)) {
+        setError('Please enter a valid URL (e.g., example.com)');
         return;
       }
+
+      // Normalize the URL (add https:// if missing)
+      const normalizedUrl = normalizeUrl(trimmedUrl);
 
       setIsLoading(true);
 
       try {
         if (onSubmit) {
-          await onSubmit(trimmedUrl);
+          await onSubmit(normalizedUrl);
         } else {
           const response = await fetch('/api/extract/start', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: trimmedUrl }),
+            body: JSON.stringify({ url: normalizedUrl }),
           });
 
           if (!response.ok) {

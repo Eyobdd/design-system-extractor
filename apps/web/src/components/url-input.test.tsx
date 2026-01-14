@@ -52,7 +52,7 @@ describe('UrlInput', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('alert')).toHaveTextContent(
-          'Please enter a valid URL (e.g., https://example.com)'
+          'Please enter a valid URL (e.g., example.com)'
         );
       });
     });
