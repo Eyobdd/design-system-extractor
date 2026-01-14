@@ -777,12 +777,12 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-10.1: Configure Puppeteer for Server-Side Execution
 
-- [ ] Add `@sparticuz/chromium` for serverless Chromium support
-- [ ] Create `apps/web/src/lib/browser.ts`:
+- [x] Add `@sparticuz/chromium` for serverless Chromium support
+- [x] Create `apps/web/src/lib/browser.ts`:
   - Configure Puppeteer to use bundled Chromium in production
   - Use local Chrome in development
-- [ ] Update `apps/web/next.config.js` for Puppeteer compatibility
-- [ ] Add environment detection (local vs Render)
+- [x] Update `apps/web/next.config.js` for Puppeteer compatibility
+- [x] Add environment detection (local vs Render)
 
 **Commit**: `Configure Puppeteer for server-side execution`
 
@@ -790,12 +790,12 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-10.2: Wire Extraction API to Real Extractor
 
-- [ ] Update `apps/web/src/app/api/extract/extraction.ts`:
+- [x] Update `apps/web/src/app/api/extract/extraction.ts`:
   - Import and use `Extractor` from `@extracted/extractor`
   - Remove `simulateDelay` stubs
   - Pass real URL to extractor
-- [ ] Handle extraction events for progress updates
-- [ ] Store real screenshots and extracted tokens in checkpoint
+- [x] Handle extraction events for progress updates
+- [x] Store real screenshots and extracted tokens in checkpoint
 
 **Commit**: `Wire extraction API to real extractor pipeline`
 
@@ -803,7 +803,7 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-10.3: Add URL Normalization
 
-- [ ] Create `apps/web/src/lib/url-utils.ts`:
+- [x] Create `apps/web/src/lib/url-utils.ts`:
   ```typescript
   export function normalizeUrl(input: string): string {
     // "example.com" → "https://example.com"
@@ -811,9 +811,9 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
     // "http://example.com" → "http://example.com" (preserve)
   }
   ```
-- [ ] Update URL input component to auto-normalize
-- [ ] Update validation to accept simplified URLs
-- [ ] Add tests for URL normalization
+- [x] Update URL input component to auto-normalize
+- [x] Update validation to accept simplified URLs
+- [x] Add tests for URL normalization
 
 **Commit**: `Add URL normalization for simplified input`
 
@@ -821,10 +821,10 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-10.4: Add Extraction Error Recovery
 
-- [ ] Implement retry logic for transient failures
-- [ ] Add timeout handling for slow pages
-- [ ] Surface meaningful error messages to UI
-- [ ] Add extraction logs for debugging
+- [x] Implement retry logic for transient failures
+- [x] Add timeout handling for slow pages
+- [x] Surface meaningful error messages to UI
+- [x] Add extraction logs for debugging
 
 **Commit**: `Add extraction error recovery and logging`
 
