@@ -136,10 +136,10 @@ export function OriginalPreview({
 
 interface OriginalPreviewFallbackProps {
   url: string;
-  screenshotUrl?: string;
-  boundingBox?: BoundingBox;
-  className?: string;
-  height?: number;
+  screenshotUrl?: string | undefined;
+  boundingBox?: BoundingBox | undefined;
+  className?: string | undefined;
+  height?: number | undefined;
 }
 
 /**
