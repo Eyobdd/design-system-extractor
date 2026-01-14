@@ -1,5 +1,7 @@
 import { CheckpointStore, createExtractor } from '@extracted/extractor';
 import type { ExtractorEvent } from '@extracted/extractor';
+import { createLogger } from '@/lib/extraction-logger';
+import { withRetry } from '@/lib/retry';
 
 let checkpointStoreInstance: CheckpointStore | null = null;
 
@@ -24,6 +26,7 @@ function shouldUseDryRun(): boolean {
 
 /**
  * Starts the real extraction pipeline using the Extractor class
+ * Includes logging and retry logic for resilience
  */
 export async function startExtractionAsync(
   checkpointId: string,
@@ -31,6 +34,9 @@ export async function startExtractionAsync(
   store?: CheckpointStore
 ): Promise<void> {
   const checkpointStore = store ?? getCheckpointStore();
+  const logger = createLogger(checkpointId);
+
+  logger.info('Starting extraction', { url });
 
   try {
     // Create the extractor with the URL
@@ -46,13 +52,26 @@ export async function startExtractionAsync(
 
     // Set up event handlers to update the checkpoint as extraction progresses
     extractor.on((event: ExtractorEvent) => {
+      logger.debug('Extraction event', { type: event.type });
       handleExtractionEvent(checkpointId, event, checkpointStore).catch(err => {
-        console.error('Error handling extraction event:', err);
+        logger.error('Error handling extraction event', {
+          error: err instanceof Error ? err.message : String(err),
+        });
       });
     });
 
-    // Run the extraction pipeline
-    const result = await extractor.run();
+    // Run the extraction pipeline with retry logic
+    const result = await withRetry(() => extractor.run(), {
+      maxRetries: 2,
+      initialDelayMs: 2000,
+      onRetry: (attempt, error, delayMs) => {
+        logger.warn(`Extraction attempt ${attempt} failed, retrying in ${delayMs}ms`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      },
+    });
+
+    logger.info('Extraction completed successfully');
 
     // If the extractor created its own checkpoint, merge the data
     if (result.checkpoint.id !== checkpointId) {
@@ -68,10 +87,12 @@ export async function startExtractionAsync(
       });
     }
   } catch (error) {
-    console.error('Extraction failed:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Extraction failed', { error: errorMessage });
+
     await checkpointStore.update(checkpointId, {
       status: 'failed',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
     });
   }
 }
