@@ -940,9 +940,9 @@ This phase implements persistent storage using MongoDB Atlas, replacing the file
 
 ### CL-11.5: Update Extract Page with Variant Comparison
 
-- [ ] Replace token-only display with variant accordion
-- [ ] Show extraction progress → variant review flow
-- [ ] Add "Review All Variants" summary section
+- [x] Replace token-only display with variant accordion
+- [x] Show extraction progress → variant review flow
+- [x] Add view mode toggle (Visual Comparison / Raw Tokens)
 - [ ] Add "Proceed to Export" button (only when all reviewed)
 
 **Commit**: `Update extract page with variant comparison UI`
