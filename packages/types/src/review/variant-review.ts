@@ -51,13 +51,13 @@ export interface VariantReview {
   originalBoundingBox: BoundingBox;
 
   /** Confidence score from extraction (0-1) */
-  matchScore?: number;
+  matchScore?: number | undefined;
 
   /** When this variant was reviewed */
-  reviewedAt?: Date;
+  reviewedAt?: Date | undefined;
 
   /** User feedback to pass to LLM on retry extraction */
-  reviewComment?: string;
+  reviewComment?: string | undefined;
 }
 
 /**

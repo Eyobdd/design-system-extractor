@@ -124,6 +124,91 @@ describe('ExtractPage', () => {
     });
   });
 
+  describe('View Mode Toggle', () => {
+    it('defaults to comparison view mode', async () => {
+      const { useExtractionStatus } = await import('@/hooks/use-extraction-status');
+      vi.mocked(useExtractionStatus).mockReturnValue({
+        data: createMockStatus({ status: 'complete', progress: 100 }),
+        error: null,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      const ExtractPage = (await import('./page')).default;
+      render(<ExtractPage />);
+
+      const comparisonButton = screen.getByRole('button', { name: /visual comparison/i });
+      expect(comparisonButton).toHaveClass('bg-blue-600');
+    });
+
+    it('switches to tokens view when clicked', async () => {
+      const { useExtractionStatus } = await import('@/hooks/use-extraction-status');
+      vi.mocked(useExtractionStatus).mockReturnValue({
+        data: createMockStatus({
+          status: 'complete',
+          progress: 100,
+          extractedTokens: { colors: { primary: '#3b82f6' } },
+        }),
+        error: null,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      const ExtractPage = (await import('./page')).default;
+      render(<ExtractPage />);
+
+      const tokensButton = screen.getByRole('button', { name: /raw tokens/i });
+      await userEvent.click(tokensButton);
+
+      expect(tokensButton).toHaveClass('bg-blue-600');
+      expect(screen.getByText('Extracted Tokens')).toBeInTheDocument();
+    });
+
+    it('switches back to comparison view', async () => {
+      const { useExtractionStatus } = await import('@/hooks/use-extraction-status');
+      vi.mocked(useExtractionStatus).mockReturnValue({
+        data: createMockStatus({
+          status: 'complete',
+          progress: 100,
+          extractedTokens: { colors: { primary: '#3b82f6' } },
+        }),
+        error: null,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      const ExtractPage = (await import('./page')).default;
+      render(<ExtractPage />);
+
+      const tokensButton = screen.getByRole('button', { name: /raw tokens/i });
+      const comparisonButton = screen.getByRole('button', { name: /visual comparison/i });
+
+      await userEvent.click(tokensButton);
+      await userEvent.click(comparisonButton);
+
+      expect(comparisonButton).toHaveClass('bg-blue-600');
+    });
+
+    it('hides tokens view when not in tokens mode', async () => {
+      const { useExtractionStatus } = await import('@/hooks/use-extraction-status');
+      vi.mocked(useExtractionStatus).mockReturnValue({
+        data: createMockStatus({
+          status: 'complete',
+          progress: 100,
+          extractedTokens: { colors: { primary: '#3b82f6' } },
+        }),
+        error: null,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      const ExtractPage = (await import('./page')).default;
+      render(<ExtractPage />);
+
+      expect(screen.queryByText('Extracted Tokens')).not.toBeInTheDocument();
+    });
+  });
+
   describe('Complete State', () => {
     it('shows success message and view button', async () => {
       const { useExtractionStatus } = await import('@/hooks/use-extraction-status');
@@ -179,6 +264,10 @@ describe('ExtractPage', () => {
 
       const ExtractPage = (await import('./page')).default;
       render(<ExtractPage />);
+
+      // Default view is comparison mode, switch to tokens view
+      const tokensButton = screen.getByRole('button', { name: /Raw Tokens/i });
+      await userEvent.click(tokensButton);
 
       expect(screen.getByText('Extracted Tokens')).toBeInTheDocument();
       expect(screen.getByText(/#3b82f6/)).toBeInTheDocument();
