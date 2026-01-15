@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, ExternalLink, AlertCircle, CheckCircle2, Eye, Code } from 'lucide-react';
 import { ProgressBar } from '@/components/progress-bar';
 import { useExtractionStatus } from '@/hooks/use-extraction-status';
 import { VariantComparisonList } from '@/components/variant-comparison';
+import { ExtractedTokensView } from '@/components/extracted-tokens-view';
+import { tokensToVariantReviews } from '@/lib/tokens-to-variants';
 import type { VariantReview, VariantReviewStatus } from '@extracted/types';
 
 export default function ExtractPage() {
@@ -14,8 +16,18 @@ export default function ExtractPage() {
   const id = params.id;
   const router = useRouter();
   const { data, error, isLoading } = useExtractionStatus(id);
-  const [viewMode, setViewMode] = useState<'comparison' | 'tokens'>('comparison');
+  const [viewMode, setViewMode] = useState<'tokens' | 'comparison'>('tokens');
   const [variantReviews, setVariantReviews] = useState<VariantReview[]>([]);
+
+  // Convert extracted tokens to variant reviews when data changes
+  useEffect(() => {
+    if (data?.extractedTokens && variantReviews.length === 0) {
+      const reviews = tokensToVariantReviews(
+        data.extractedTokens as Parameters<typeof tokensToVariantReviews>[0]
+      );
+      setVariantReviews(reviews);
+    }
+  }, [data?.extractedTokens, variantReviews.length]);
 
   const handleStatusChange = useCallback(
     (variantId: string, status: VariantReviewStatus, comment?: string) => {
@@ -152,17 +164,6 @@ export default function ExtractPage() {
               {/* View Mode Toggle */}
               <div className="mb-4 flex items-center gap-2">
                 <button
-                  onClick={() => setViewMode('comparison')}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                    viewMode === 'comparison'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
-                  }`}
-                >
-                  <Eye className="h-4 w-4" />
-                  Visual Comparison
-                </button>
-                <button
                   onClick={() => setViewMode('tokens')}
                   className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                     viewMode === 'tokens'
@@ -170,8 +171,19 @@ export default function ExtractPage() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
                   }`}
                 >
+                  <Eye className="h-4 w-4" />
+                  Extracted Tokens
+                </button>
+                <button
+                  onClick={() => setViewMode('comparison')}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                    viewMode === 'comparison'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
+                  }`}
+                >
                   <Code className="h-4 w-4" />
-                  Raw Tokens
+                  Component Variants
                 </button>
               </div>
 
@@ -186,12 +198,7 @@ export default function ExtractPage() {
 
               {/* Tokens View */}
               {viewMode === 'tokens' && data.extractedTokens && (
-                <div>
-                  <h2 className="mb-4 text-lg font-semibold">Extracted Tokens</h2>
-                  <pre className="overflow-auto rounded-lg bg-gray-100 p-4 text-sm dark:bg-gray-800">
-                    {JSON.stringify(data.extractedTokens, null, 2)}
-                  </pre>
-                </div>
+                <ExtractedTokensView tokens={data.extractedTokens} />
               )}
             </div>
           )}
