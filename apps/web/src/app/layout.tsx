@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { WizardProvider } from '@/contexts/wizard-context';
 
 export const metadata: Metadata = {
   title: 'Design System Extractor',
@@ -14,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <main className="flex min-h-screen flex-col">{children}</main>
+        <WizardProvider>{children}</WizardProvider>
       </body>
     </html>
   );

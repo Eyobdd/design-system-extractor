@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import HomePage from './page';
+import { WizardProvider } from '@/contexts/wizard-context';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -8,29 +9,34 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+function renderWithProvider() {
+  return render(
+    <WizardProvider>
+      <HomePage />
+    </WizardProvider>
+  );
+}
+
 describe('HomePage', () => {
   it('renders the main heading', () => {
-    render(<HomePage />);
+    renderWithProvider();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Design System Extractor');
   });
 
   it('renders the description', () => {
-    render(<HomePage />);
-    expect(screen.getByText(/Extract design tokens/i)).toBeInTheDocument();
+    renderWithProvider();
+    expect(screen.getByText(/Enter a website URL to extract/i)).toBeInTheDocument();
   });
 
   it('renders the URL input', () => {
-    render(<HomePage />);
+    renderWithProvider();
     expect(screen.getByRole('textbox', { name: /website url/i })).toBeInTheDocument();
   });
 
-  it('renders the extract button', () => {
-    render(<HomePage />);
-    expect(screen.getByRole('button', { name: /extract/i })).toBeInTheDocument();
-  });
-
-  it('renders helper text', () => {
-    render(<HomePage />);
-    expect(screen.getByText(/Enter any website URL/i)).toBeInTheDocument();
+  it('renders extract-related buttons', () => {
+    renderWithProvider();
+    // Multiple buttons with "Extract" text exist (sidebar step + form submit)
+    const extractButtons = screen.getAllByRole('button', { name: /extract/i });
+    expect(extractButtons.length).toBeGreaterThan(0);
   });
 });
